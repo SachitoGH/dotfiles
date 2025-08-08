@@ -16,17 +16,9 @@ return {
         },
       }
 
-      require('mini.surround').setup {
-        mappings = {
-          add = 'gsa',
-          delete = 'gsd',
-          find = 'gsf',
-          find_left = 'gsF',
-          highlight = 'gsh',
-          replace = 'gsr',
-          update_n_lines = 'gsn',
-        },
-      }
+      vim.keymap.set('n', 's', '<Nop>')
+      require('mini.surround').setup()
+      -- 🔥 Disable default 's' AFTER mini.surround has mapped it
 
       local statusline = require 'mini.statusline'
       statusline.setup { use_icons = vim.g.have_nerd_font }

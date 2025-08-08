@@ -17,6 +17,7 @@ return {
         'vim',
         'vimdoc',
         'python',
+        'sql',
       },
       auto_install = true,
       highlight = {
@@ -71,6 +72,7 @@ return {
     },
     dependencies = {
       'nvim-treesitter/nvim-treesitter-textobjects',
+      'nvim-treesitter/playground',
     },
   },
 }
