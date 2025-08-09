@@ -25,7 +25,7 @@ require('lazy').setup({
 
   require 'kickstart.plugins.gitsigns',
 
-  require 'kickstart.plugins.which-key',
+  -- require 'kickstart.plugins.which-key',
 
   require 'kickstart.plugins.telescope',
 
@@ -34,12 +34,6 @@ require('lazy').setup({
   require 'kickstart.plugins.conform',
 
   require 'kickstart.plugins.blink-cmp',
-
-  -- require 'kickstart.plugins.oxocarbon',
-
-  -- require 'kickstart.plugins.tokyonight',
-
-  -- require 'kickstart.plugins.kanagawa',
 
   require 'kickstart.plugins.nightfox',
 
@@ -62,6 +56,8 @@ require('lazy').setup({
   require 'kickstart.plugins.neogit',
 
   require 'kickstart.plugins.dadbob-ui',
+
+  require 'kickstart.plugins.leap',
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
   -- init.lua. If you want these files, they are in the repository, so you can just download them and
