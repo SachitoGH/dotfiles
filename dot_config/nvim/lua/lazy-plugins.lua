@@ -57,7 +57,6 @@ require('lazy').setup({
 
   require 'kickstart.plugins.dadbob-ui',
 
-  -- require 'kickstart.plugins.leap',
   require 'kickstart.plugins.flash',
 
   -- The following comments only work if you have downloaded the kickstart repo, not just copy pasted the
