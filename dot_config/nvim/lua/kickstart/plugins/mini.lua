@@ -27,6 +27,14 @@ return {
           update_n_lines = 'sn',
         },
       }
+      require('mini.move').setup {
+        mappings = {
+          left = 'H',
+          right = 'L',
+          up = 'K',
+          down = 'J',
+        },
+      }
 
       local statusline = require 'mini.statusline'
       statusline.setup { use_icons = vim.g.have_nerd_font }

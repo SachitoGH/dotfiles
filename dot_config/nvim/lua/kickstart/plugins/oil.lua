@@ -209,4 +209,17 @@ return {
   -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if you prefer nvim-web-devicons
   -- Lazy loading is not recommended because it is very tricky to make it work correctly in all situations.
   lazy = false,
+  config = function(_, opts)
+    require('oil').setup(opts)
+
+    -- Oil.nvim Floating Window Keymaps
+    vim.keymap.set('n', '<leader>o', function()
+      require('oil').open_float '.'
+    end, { desc = 'Oil: Open float in CWD' })
+
+    -- Example: open in current file’s directory
+    -- vim.keymap.set('n', '<leader>oF', function()
+    --   require('oil').open_float(vim.fn.expand '%:p:h')
+    -- end, { desc = "Oil: Open float in current file's directory" })
+  end,
 }
