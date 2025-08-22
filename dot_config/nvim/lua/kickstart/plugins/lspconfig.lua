@@ -224,6 +224,34 @@ return {
         -- ts_ls = {},
         --
 
+        -- Emmet LSP for HTML/CSS abbreviation expansion
+        emmet_ls = {
+          filetypes = {
+            'html',
+            'htmldjango',
+            'jsx',
+            'tsx',
+            'xml',
+            'xsl',
+            'pug',
+            'slim',
+            'sass',
+            'scss',
+            'less',
+            'css',
+            'vue',
+            'svelte',
+          },
+          init_options = {
+            html = {
+              options = {
+                -- For possible options, see: https://github.com/emmetio/emmet/blob/master/src/config.ts#L79-L267
+                ['bem.enabled'] = true,
+              },
+            },
+          },
+        },
+
         lua_ls = {
           -- cmd = { ... },
           -- filetypes = { ... },
