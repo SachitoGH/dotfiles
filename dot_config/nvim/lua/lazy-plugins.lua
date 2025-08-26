@@ -25,7 +25,7 @@ require('lazy').setup({
 
   require 'kickstart.plugins.gitsigns',
 
-  require 'kickstart.plugins.which-key',
+  -- require 'kickstart.plugins.which-key',
 
   require 'kickstart.plugins.telescope',
 
@@ -53,8 +53,6 @@ require('lazy').setup({
 
   require 'kickstart.plugins.diffview',
 
-  require 'kickstart.plugins.neogit',
-
   require 'kickstart.plugins.dadbob-ui',
 
   require 'kickstart.plugins.flash',
@@ -62,8 +60,6 @@ require('lazy').setup({
   require 'kickstart.plugins.mssql',
 
   require 'kickstart.plugins.render-markdown',
-
-  require 'kickstart.plugins.golf',
 
   require 'kickstart.plugins.live-preview',
 
