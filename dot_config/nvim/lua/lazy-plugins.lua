@@ -25,6 +25,8 @@ require('lazy').setup({
 
   require 'kickstart.plugins.gitsigns',
 
+  require 'kickstart.plugins.carbonfox',
+
   -- require 'kickstart.plugins.which-key',
 
   require 'kickstart.plugins.telescope',
@@ -34,8 +36,6 @@ require('lazy').setup({
   require 'kickstart.plugins.conform',
 
   require 'kickstart.plugins.blink-cmp',
-
-  require 'kickstart.plugins.nightfox',
 
   require 'kickstart.plugins.todo-comments',
 
@@ -56,8 +56,6 @@ require('lazy').setup({
   require 'kickstart.plugins.dadbob-ui',
 
   require 'kickstart.plugins.flash',
-
-  require 'kickstart.plugins.mssql',
 
   require 'kickstart.plugins.render-markdown',
 
@@ -81,7 +79,7 @@ require('lazy').setup({
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
   -- require 'kickstart.plugins.debug',
-  -- require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
