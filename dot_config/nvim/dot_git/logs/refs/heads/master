@@ -1,6 +1,0 @@
-0000000000000000000000000000000000000000 42ec5bd5aeb2bdde4e6b9a5615b4e16fe81ad7fa Sacha Senas <sachasenas@gmail.com> 1752009610 +0200	clone: from github.com:SachitoGH/kickstart-modular.nvim.git
-42ec5bd5aeb2bdde4e6b9a5615b4e16fe81ad7fa edb169140068c0cf2ce446e276196bcfd81792ba Sacha Senas <sachasenas@gmail.com> 1752010328 +0200	commit: lazy
-edb169140068c0cf2ce446e276196bcfd81792ba 5445011619739e518dc2ca86100482ea065908b0 Sacha Senas <sachasenas@gmail.com> 1752012710 +0200	commit: lazy
-5445011619739e518dc2ca86100482ea065908b0 f934cc2bea21a52bf0b21cb8553c6c3a8fea2fa4 Sacha Senas <sachasenas@gmail.com> 1752072649 +0200	reset: moving to origin/master
-f934cc2bea21a52bf0b21cb8553c6c3a8fea2fa4 fe5d403b549998d7ba255459dfcd37789fc1d225 Sacha Senas <sachasenas@gmail.com> 1752076215 +0200	commit: lazy
-fe5d403b549998d7ba255459dfcd37789fc1d225 933cc589dba4af139d0b65a5fdabb9baba26e563 Sacha Senas <sachasenas@gmail.com> 1752080724 +0200	commit: lazy
