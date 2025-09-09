@@ -109,9 +109,9 @@ return {
           --  the definition of its *type*, not where it was *defined*.
           map('grt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
 
-          vim.diagnostic.config {
-            virtual_text = false, -- Disable diagnostic virtual text by default
-          }
+          -- vim.diagnostic.config {
+          --   virtual_text = false, -- Disable diagnostic virtual text by default
+          -- }
           -- keymap for diag
           vim.keymap.set('n', '<Leader>d', vim.diagnostic.open_float, {
             -- The `silent = true` option prevents Neovim from echoing the command
