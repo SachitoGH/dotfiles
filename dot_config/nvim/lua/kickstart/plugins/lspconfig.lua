@@ -109,6 +109,26 @@ return {
           --  the definition of its *type*, not where it was *defined*.
           map('grt', require('telescope.builtin').lsp_type_definitions, '[G]oto [T]ype Definition')
 
+          vim.diagnostic.config {
+            virtual_text = false, -- Disable diagnostic virtual text by default
+          }
+          -- keymap for diag
+          vim.keymap.set('n', '<Leader>d', vim.diagnostic.open_float, {
+            -- The `silent = true` option prevents Neovim from echoing the command
+            -- in the command line, which makes the experience smoother.
+            silent = true,
+            -- A description for the mapping, which is useful for documentation
+            -- and plugins that show a list of keybindings.
+            desc = 'Show diagnostics in a floating window',
+          })
+          vim.keymap.set('n', '<Leader>gd', function()
+            local current_config = vim.diagnostic.config()
+            local new_state = not current_config.virtual_text
+            vim.diagnostic.config { virtual_text = new_state }
+          end, {
+            silent = true,
+            desc = 'Toggle diagnostic virtual text',
+          })
           -- This function resolves a difference between neovim nightly (version 0.11) and stable (version 0.10)
           ---@param client vim.lsp.Client
           ---@param method vim.lsp.protocol.Method
