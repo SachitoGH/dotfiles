@@ -115,5 +115,7 @@ vim.api.nvim_set_hl(0, 'MiniStatuslineDevinfo', { bg = 'none' })
 vim.api.nvim_set_hl(0, 'MiniStatuslineFilename', { bg = 'none' })
 vim.api.nvim_set_hl(0, 'MiniStatuslineFileinfo', { bg = 'none' })
 
+-- Active parameter in gold + bold
+vim.api.nvim_set_hl(0, 'LspSignatureActiveParameter', { fg = '#FFD700', bold = true })
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
