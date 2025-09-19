@@ -213,13 +213,13 @@ return {
     require('oil').setup(opts)
 
     -- Oil.nvim Floating Window Keymaps
-    vim.keymap.set('n', '<leader>o', function()
+    vim.keymap.set('n', '<leader>go', function()
       require('oil').open_float '.'
     end, { desc = 'Oil: Open float in CWD' })
 
     -- Example: open in current file’s directory
-    -- vim.keymap.set('n', '<leader>oF', function()
-    --   require('oil').open_float(vim.fn.expand '%:p:h')
-    -- end, { desc = "Oil: Open float in current file's directory" })
+    vim.keymap.set('n', '<leader>o', function()
+      require('oil').open_float(vim.fn.expand '%:p:h')
+    end, { desc = "Oil: Open float in current file's directory" })
   end,
 }
