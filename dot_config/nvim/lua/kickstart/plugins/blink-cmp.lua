@@ -55,7 +55,7 @@ return {
       require('blink.cmp').setup(opts)
 
       -- Signature window bg/border
-      vim.api.nvim_set_hl(0, 'BlinkCmpSignatureHelp', { fg = '#808080', bg = vim.fn.synIDattr(vim.fn.hlID 'Normal', 'bg') })
+      vim.api.nvim_set_hl(0, 'BlinkCmpSignatureHelp', { fg = '#808080', bg = vim.fn.synIDattr(vim.fn.hlID 'Normal', 'guibg') })
       vim.api.nvim_set_hl(0, 'BlinkCmpSignatureHelpBorder', { link = 'Normal' })
 
       -- -- Active parameter = keep it colorful / normal text
