@@ -15,6 +15,23 @@ vim.o.mouse = 'a'
 -- hide command line
 vim.o.cmdheight = 0
 
+-- Auto-toggle cmdheight when recording macros
+local macro_group = vim.api.nvim_create_augroup("MacroCmdHeight", { clear = true })
+
+vim.api.nvim_create_autocmd("RecordingEnter", {
+  group = macro_group,
+  callback = function()
+    vim.opt.cmdheight = 1
+  end,
+})
+
+vim.api.nvim_create_autocmd("RecordingLeave", {
+  group = macro_group,
+  callback = function()
+    vim.opt.cmdheight = 0
+  end,
+})
+
 -- hide basic diag
 vim.diagnostic.config { virtual_text = false }
 
