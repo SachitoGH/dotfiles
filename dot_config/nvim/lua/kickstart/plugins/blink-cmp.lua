@@ -10,7 +10,12 @@ return {
     },
 
     opts = {
-      keymap = { preset = 'default' },
+      -- We add the <C-s> mapping here
+      keymap = {
+        preset = 'default',
+        ['<C-s>'] = { 'show_signature', 'hide_signature', 'fallback' },
+      },
+
       appearance = { nerd_font_variant = 'mono' },
 
       completion = {
@@ -43,6 +48,11 @@ return {
 
       signature = {
         enabled = true,
+        -- This section disables the automatic popup
+        trigger = {
+          show_on_insert = false, -- Don't show when entering insert mode
+          show_on_trigger_character = false, -- Don't show when typing '(' or ','
+        },
         window = {
           border = 'rounded',
           winblend = 0,
@@ -57,10 +67,6 @@ return {
       -- Signature window bg/border
       vim.api.nvim_set_hl(0, 'BlinkCmpSignatureHelp', { fg = '#808080', bg = vim.fn.synIDattr(vim.fn.hlID 'Normal', 'guibg') })
       vim.api.nvim_set_hl(0, 'BlinkCmpSignatureHelpBorder', { link = 'Normal' })
-
-      -- -- Active parameter = keep it colorful / normal text
-      -- vim.api.nvim_set_hl(0, 'BlinkCmpSignatureHelpActiveParameter', { link = 'Normal' })
-      -- vim.api.nvim_set_hl(0, 'BlinkCmpSignatureHelpInactiveParameter', { link = 'Comment' })
 
       -- Completion menu
       vim.api.nvim_set_hl(0, 'BlinkCmpMenu', { link = 'Normal' })
