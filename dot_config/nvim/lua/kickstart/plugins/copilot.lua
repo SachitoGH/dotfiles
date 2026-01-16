@@ -11,5 +11,15 @@ return {
       expr = true,
       replace_keycodes = false
     })
+
+    -- Toggle Copilot with <leader>ai
+    vim.keymap.set('n', '<leader>ai', function()
+      vim.g.copilot_enabled = not vim.g.copilot_enabled
+      if vim.g.copilot_enabled then
+        print("Copilot Enabled")
+      else
+        print("Copilot Disabled")
+      end
+    end, { desc = "Toggle Copilot" })
   end
 }

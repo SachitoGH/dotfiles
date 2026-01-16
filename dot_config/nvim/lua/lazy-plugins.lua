@@ -22,6 +22,7 @@ require('lazy').setup({
 
   -- modular approach: using `require 'path.name'` will
   -- include a plugin definition from file lua/path/name.lua
+
   require 'kickstart.plugins.copilot',
 
   require 'kickstart.plugins.neotree',
@@ -56,11 +57,7 @@ require('lazy').setup({
 
   require 'kickstart.plugins.diffview',
 
-  require 'kickstart.plugins.dadbob-ui',
-
   require 'kickstart.plugins.flash',
-
-  require 'kickstart.plugins.render-markdown',
 
   require 'kickstart.plugins.live-preview',
 
@@ -80,8 +77,7 @@ require('lazy').setup({
   --
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
-  --
-  -- require 'kickstart.plugins.debug',
+
   require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
 
