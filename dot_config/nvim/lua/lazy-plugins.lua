@@ -22,6 +22,9 @@ require('lazy').setup({
 
   -- modular approach: using `require 'path.name'` will
   -- include a plugin definition from file lua/path/name.lua
+
+  require 'kickstart.plugins.treesitter-context',
+
   require 'kickstart.plugins.dial',
 
   require 'kickstart.plugins.copilot',
