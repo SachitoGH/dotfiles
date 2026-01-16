@@ -37,8 +37,6 @@ require('lazy').setup({
 
   require 'kickstart.plugins.lspconfig',
 
-  -- require 'kickstart.plugins.conform',
-
   require 'kickstart.plugins.blink-cmp',
 
   require 'kickstart.plugins.todo-comments',
@@ -78,7 +76,6 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
 
-  require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
