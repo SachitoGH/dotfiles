@@ -60,7 +60,9 @@ compinit -C
 # =====================================================
 
 # fzf-tab (needs to come after compinit)
-zinit wait lucid for Aloxaf/fzf-tab
+zinit wait lucid for \
+    zsh-users/zsh-completions \
+    Aloxaf/fzf-tab
 
 # Fast syntax highlighting – loaded LAST with repaint trigger
 zinit wait lucid atload'
