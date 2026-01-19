@@ -1,4 +1,14 @@
 # =====================================================
+# Smart Tmux Autostart
+# =====================================================
+if command -v tmux &> /dev/null && \
+   [[ -z "$TMUX" ]] && \
+   [[ $- == *i* ]] && \
+   [[ "$TERM_PROGRAM" != "vscode" ]]; then
+    exec tmux new-session -A -s main
+fi
+
+# =====================================================
 # Powerlevel10k instant prompt (must stay at top)
 # =====================================================
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
@@ -18,7 +28,7 @@ if [[ -d /home/linuxbrew/.linuxbrew ]]; then
 fi
 
 # Fix termux bug
-#setopt REMATCHPCRE 
+#setopt REMATCHPCRE
 
 # =====================================================
 # Environment
@@ -63,6 +73,7 @@ compinit -C
 # =====================================================
 
 # fzf-tab (needs to come after compinit)
+zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
 zinit wait lucid for Aloxaf/fzf-tab
 
 # Fast syntax highlighting – loaded LAST with repaint trigger
@@ -71,8 +82,13 @@ zinit wait lucid atload'
   FAST_HIGHLIGHT_STYLES[unknown-token]="fg=white"
 ' for zdharma-continuum/fast-syntax-highlighting
 
-# Vi mode
-zinit light jeffreytse/zsh-vi-mode
+# Vi mode# 1. Set the key timeout to 1 (10ms) to remove ESC delay
+KEYTIMEOUT=1
+#Fix startup glitch (execute: 0000...)
+ZVM_INIT_MODE=sourcing
+
+ZVM_VI_HIGHLIGHT_BACKGROUND='#504945'
+ZVM_VI_HIGHLIGHT_FOREGROUND='white'
 ZVM_VI_SURROUND_BINDKEY=s-prefix
 # Restore classic ↑/↓ prefix search even with vi-mode
 function zvm_after_init() {
@@ -85,6 +101,7 @@ function zvm_after_init() {
     bindkey -M vicmd 'j' down-line-or-beginning-search
 }
 
+zinit light jeffreytse/zsh-vi-mode
 # =====================================================
 # Prompt – should come after syntax highlighting in most cases
 # =====================================================
@@ -97,13 +114,12 @@ zinit light romkatv/powerlevel10k
 # =====================================================
 autoload -Uz up-line-or-beginning-search
 autoload -Uz down-line-or-beginning-search
-zle -N up-line-or-beginning-search
-zle -N down-line-or-beginning-search
-bindkey '^[[A' up-line-or-beginning-search
-bindkey '^[[B' down-line-or-beginning-search
 
 # =====================================================
 # Aliases
 # =====================================================
 alias nv=nvim
 alias py=python3
+alias ls='ls --color=auto'
+alias ll='ls -alF'
+alias grep='grep --color=auto'
