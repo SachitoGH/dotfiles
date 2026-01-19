@@ -11,8 +11,10 @@ fi
 export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 
 # Homebrew (Linuxbrew)
-if [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
+if [[ -d /home/linuxbrew/.linuxbrew ]]; then
+  export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+  export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"
+  export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"
 fi
 
 # =====================================================
@@ -75,7 +77,7 @@ autoload -Uz compinit
 # Case-insensitive completion
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
 
-compinit
+compinit -C
 
 zinit wait lucid for Aloxaf/fzf-tab
 
