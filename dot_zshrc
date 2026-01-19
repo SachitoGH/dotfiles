@@ -1,67 +1,94 @@
-# --- Environment & PATH ---
-export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
-
-# =========================
-# Environment & Options
-# =========================
-
-#setopt REMATCHPCRE
-
-if [[ -n $SSH_CONNECTION ]]; then
-    export EDITOR='vim'
-else
-    export EDITOR='nvim'
+# =====================================================
+# Powerlevel10k instant prompt (must stay at top)
+# =====================================================
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
 fi
 
-# =========================
-# zinit (plugin manager)
-# =========================
+# =====================================================
+# Environment & PATH
+# =====================================================
+export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 
+# Homebrew (Linuxbrew)
+if [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
+fi
+
+# =====================================================
+# Environment
+# =====================================================
+if [[ -n $SSH_CONNECTION ]]; then
+  export EDITOR=vim
+else
+  export EDITOR=nvim
+fi
+
+# =====================================================
+# History
+# =====================================================
+HISTFILE=$HOME/.zsh_history
+HISTSIZE=10000
+SAVEHIST=10000
+
+setopt SHARE_HISTORY        # Share history across sessions
+setopt INC_APPEND_HISTORY  # Write history immediately
+setopt HIST_IGNORE_ALL_DUPS
+setopt HIST_REDUCE_BLANKS
+
+# =====================================================
+# zinit (plugin manager)
+# =====================================================
 ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
 
 if [[ ! -d $ZINIT_HOME ]]; then
-    mkdir -p "$(dirname $ZINIT_HOME)"
-    git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+  mkdir -p "${ZINIT_HOME:h}"
+  git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
 fi
 
 source "$ZINIT_HOME/zinit.zsh"
 
-# =========================
+# =====================================================
+# Prompt
+# =====================================================
+zinit ice depth=1
+zinit light romkatv/powerlevel10k
+[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+
+# =====================================================
 # Plugins
-# =========================
+# =====================================================
 
 # Fast syntax highlighting (must be early)
 zinit light zdharma-continuum/fast-syntax-highlighting
-FAST_HIGHLIGHT_STYLES[unknown-token]='fg=white,bg=default'
+FAST_HIGHLIGHT_STYLES[unknown-token]='fg=white'
 
 # Vi mode
 zinit light jeffreytse/zsh-vi-mode
 ZVM_VI_SURROUND_BINDKEY=s-prefix
 
-# History substring search (with NO highlighting)
-zinit wait lucid for \
-    atload'
-        bindkey "$terminfo[kcuu1]" history-substring-search-up
-        bindkey "$terminfo[kcud1]" history-substring-search-down
-        bindkey "^[[A" history-substring-search-up
-        bindkey "^[[B" history-substring-search-down
-    ' \
-    zsh-users/zsh-history-substring-search
+# =====================================================
+# Completion
+# =====================================================
+autoload -Uz compinit
+compinit
 
-HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND=''
-HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND=''
+zinit wait lucid for Aloxaf/fzf-tab
 
-# =========================
+# =====================================================
+# ZLE / Keybindings
+# =====================================================
+autoload -Uz up-line-or-beginning-search
+autoload -Uz down-line-or-beginning-search
+
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+
+bindkey "${key[Up]}"   up-line-or-beginning-search
+bindkey "${key[Down]}" down-line-or-beginning-search
+
+# =====================================================
 # Aliases
-# =========================
-
+# =====================================================
 alias nv=nvim
 alias py=python3
-
-eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
-
-# =========================
-# Prompt (Starship)
-# =========================
-
-eval "$(starship init zsh)"
