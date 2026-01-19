@@ -1,0 +1,67 @@
+# --- Environment & PATH ---
+export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
+
+# =========================
+# Environment & Options
+# =========================
+
+#setopt REMATCHPCRE
+
+if [[ -n $SSH_CONNECTION ]]; then
+    export EDITOR='vim'
+else
+    export EDITOR='nvim'
+fi
+
+# =========================
+# zinit (plugin manager)
+# =========================
+
+ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
+
+if [[ ! -d $ZINIT_HOME ]]; then
+    mkdir -p "$(dirname $ZINIT_HOME)"
+    git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+fi
+
+source "$ZINIT_HOME/zinit.zsh"
+
+# =========================
+# Plugins
+# =========================
+
+# Fast syntax highlighting (must be early)
+zinit light zdharma-continuum/fast-syntax-highlighting
+FAST_HIGHLIGHT_STYLES[unknown-token]='fg=white,bg=default'
+
+# Vi mode
+zinit light jeffreytse/zsh-vi-mode
+ZVM_VI_SURROUND_BINDKEY=s-prefix
+
+# History substring search (with NO highlighting)
+zinit wait lucid for \
+    atload'
+        bindkey "$terminfo[kcuu1]" history-substring-search-up
+        bindkey "$terminfo[kcud1]" history-substring-search-down
+        bindkey "^[[A" history-substring-search-up
+        bindkey "^[[B" history-substring-search-down
+    ' \
+    zsh-users/zsh-history-substring-search
+
+HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_FOUND=''
+HISTORY_SUBSTRING_SEARCH_HIGHLIGHT_NOT_FOUND=''
+
+# =========================
+# Aliases
+# =========================
+
+alias nv=nvim
+alias py=python3
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv zsh)"
+
+# =========================
+# Prompt (Starship)
+# =========================
+
+eval "$(starship init zsh)"
