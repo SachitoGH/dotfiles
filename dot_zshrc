@@ -32,9 +32,8 @@ fi
 HISTFILE=$HOME/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
-
-setopt SHARE_HISTORY        # Share history across sessions
-setopt INC_APPEND_HISTORY  # Write history immediately
+setopt SHARE_HISTORY           # Share history across sessions
+setopt INC_APPEND_HISTORY      # Write history immediately
 setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_REDUCE_BLANKS
 
@@ -42,55 +41,54 @@ setopt HIST_REDUCE_BLANKS
 # zinit (plugin manager)
 # =====================================================
 ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
-
 if [[ ! -d $ZINIT_HOME ]]; then
   mkdir -p "${ZINIT_HOME:h}"
   git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
 fi
-
 source "$ZINIT_HOME/zinit.zsh"
 
 # =====================================================
-# Prompt
+# Completion system FIRST
 # =====================================================
-zinit ice depth=1
-zinit light romkatv/powerlevel10k
-[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
+autoload -Uz compinit
+# Case-insensitive completion
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+compinit -C
 
 # =====================================================
 # Plugins
 # =====================================================
 
-# Fast syntax highlighting (must be early)
-zinit light zdharma-continuum/fast-syntax-highlighting
-FAST_HIGHLIGHT_STYLES[unknown-token]='fg=white'
+# fzf-tab (needs to come after compinit)
+zinit wait lucid for Aloxaf/fzf-tab
+
+# Fast syntax highlighting – loaded LAST with repaint trigger
+zinit wait lucid atload'
+  # Now safe to set custom styles (array is initialized)
+  FAST_HIGHLIGHT_STYLES[unknown-token]="fg=white"
+  # Optional: force immediate repaint if needed
+  _zsh_highlight
+' for zdharma-continuum/fast-syntax-highlighting
 
 # Vi mode
 zinit light jeffreytse/zsh-vi-mode
 ZVM_VI_SURROUND_BINDKEY=s-prefix
 
 # =====================================================
-# Completion
+# Prompt – should come after syntax highlighting in most cases
 # =====================================================
-autoload -Uz compinit
-
-# Case-insensitive completion
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
-
-compinit -C
-
-zinit wait lucid for Aloxaf/fzf-tab
+zinit ice depth=1
+zinit light romkatv/powerlevel10k
+[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
 # =====================================================
 # ZLE / Keybindings
 # =====================================================
 autoload -Uz up-line-or-beginning-search
 autoload -Uz down-line-or-beginning-search
-
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
-
-bindkey "${key[Up]}"   up-line-or-beginning-search
+bindkey "${key[Up]}" up-line-or-beginning-search
 bindkey "${key[Down]}" down-line-or-beginning-search
 
 # =====================================================
