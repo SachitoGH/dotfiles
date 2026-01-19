@@ -71,6 +71,10 @@ ZVM_VI_SURROUND_BINDKEY=s-prefix
 # Completion
 # =====================================================
 autoload -Uz compinit
+
+# Case-insensitive completion
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+
 compinit
 
 zinit wait lucid for Aloxaf/fzf-tab
