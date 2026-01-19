@@ -26,9 +26,6 @@ else
   export EDITOR=nvim
 fi
 
-# FIX BUG TERMUX
-# setopt REMATCHPCRE
-
 # =====================================================
 # History
 # =====================================================
@@ -63,21 +60,27 @@ compinit -C
 # =====================================================
 
 # fzf-tab (needs to come after compinit)
-zinit wait lucid for \
-    zsh-users/zsh-completions \
-    Aloxaf/fzf-tab
+zinit wait lucid for Aloxaf/fzf-tab
 
 # Fast syntax highlighting – loaded LAST with repaint trigger
 zinit wait lucid atload'
   # Now safe to set custom styles (array is initialized)
   FAST_HIGHLIGHT_STYLES[unknown-token]="fg=white"
-  # Optional: force immediate repaint if needed
-  _zsh_highlight
 ' for zdharma-continuum/fast-syntax-highlighting
 
 # Vi mode
 zinit light jeffreytse/zsh-vi-mode
 ZVM_VI_SURROUND_BINDKEY=s-prefix
+# Restore classic ↑/↓ prefix search even with vi-mode
+function zvm_after_init() {
+    zle -N up-line-or-beginning-search
+    zle -N down-line-or-beginning-search
+    bindkey -M viins '^[[A' up-line-or-beginning-search   # Up
+    bindkey -M viins '^[[B' down-line-or-beginning-search  # Down
+    # Optional: also in normal mode (k / j)
+    bindkey -M vicmd 'k' up-line-or-beginning-search
+    bindkey -M vicmd 'j' down-line-or-beginning-search
+}
 
 # =====================================================
 # Prompt – should come after syntax highlighting in most cases
@@ -93,8 +96,8 @@ autoload -Uz up-line-or-beginning-search
 autoload -Uz down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
-bindkey "${key[Up]:=$'\e[A'}" up-line-or-beginning-search
-bindkey "${key[Down]:=$'\e[B'}" down-line-or-beginning-search
+bindkey '^[[A' up-line-or-beginning-search
+bindkey '^[[B' down-line-or-beginning-search
 
 # =====================================================
 # Aliases
