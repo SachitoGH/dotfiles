@@ -17,6 +17,9 @@ if [[ -d /home/linuxbrew/.linuxbrew ]]; then
   export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"
 fi
 
+# Fix termux bug
+#setopt REMATCHPCRE 
+
 # =====================================================
 # Environment
 # =====================================================
@@ -52,7 +55,7 @@ source "$ZINIT_HOME/zinit.zsh"
 # =====================================================
 autoload -Uz compinit
 # Case-insensitive completion
-zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}'
+zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
 compinit -C
 
 # =====================================================
