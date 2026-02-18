@@ -27,11 +27,8 @@ if [[ -d /home/linuxbrew/.linuxbrew ]]; then
   export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"
 fi
 
-# Fix termux bug
-#setopt REMATCHPCRE
-
 # =====================================================
-# Environment
+# Editor
 # =====================================================
 if [[ -n $SSH_CONNECTION ]]; then
   export EDITOR=vim
@@ -45,13 +42,13 @@ fi
 HISTFILE=$HOME/.zsh_history
 HISTSIZE=10000
 SAVEHIST=10000
-setopt SHARE_HISTORY           # Share history across sessions
-setopt INC_APPEND_HISTORY      # Write history immediately
+setopt SHARE_HISTORY
+setopt INC_APPEND_HISTORY
 setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_REDUCE_BLANKS
 
 # =====================================================
-# zinit (plugin manager)
+# zinit
 # =====================================================
 ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
 if [[ ! -d $ZINIT_HOME ]]; then
@@ -61,59 +58,51 @@ fi
 source "$ZINIT_HOME/zinit.zsh"
 
 # =====================================================
-# Completion system FIRST
+# Completion (first)
 # =====================================================
 autoload -Uz compinit
-# Case-insensitive completion
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
 compinit -C
 
 # =====================================================
 # Plugins
 # =====================================================
+# fzf-tab (normal version for max stability)
+zinit light Aloxaf/fzf-tab
 
-# fzf-tab (needs to come after compinit)
-zstyle ':fzf-tab:*' fzf-command ftb-tmux-popup
-zinit wait lucid for Aloxaf/fzf-tab
-
-# Fast syntax highlighting – loaded LAST with repaint trigger
-zinit wait lucid atload'
-  # Now safe to set custom styles (array is initialized)
-  FAST_HIGHLIGHT_STYLES[unknown-token]="fg=white"
-' for zdharma-continuum/fast-syntax-highlighting
-
-# Vi mode# 1. Set the key timeout to 1 (10ms) to remove ESC delay
+# Vi mode
 KEYTIMEOUT=1
-#Fix startup glitch (execute: 0000...)
 ZVM_INIT_MODE=sourcing
-
 ZVM_VI_HIGHLIGHT_BACKGROUND='#504945'
 ZVM_VI_HIGHLIGHT_FOREGROUND='white'
 ZVM_VI_SURROUND_BINDKEY=s-prefix
-# Restore classic ↑/↓ prefix search even with vi-mode
+
+autoload -Uz up-line-or-beginning-search
+autoload -Uz down-line-or-beginning-search
+
 function zvm_after_init() {
     zle -N up-line-or-beginning-search
     zle -N down-line-or-beginning-search
-    bindkey -M viins '^[[A' up-line-or-beginning-search   # Up
-    bindkey -M viins '^[[B' down-line-or-beginning-search  # Down
-    # Optional: also in normal mode (k / j)
+    bindkey -M viins '^[[A' up-line-or-beginning-search
+    bindkey -M viins '^[[B' down-line-or-beginning-search
     bindkey -M vicmd 'k' up-line-or-beginning-search
     bindkey -M vicmd 'j' down-line-or-beginning-search
 }
 
 zinit light jeffreytse/zsh-vi-mode
+
+# Fast syntax highlighting (loaded late)
+zinit light zdharma-continuum/fast-syntax-highlighting
+
+# Unknown commands stay white while typing → turn green when valid
+FAST_HIGHLIGHT_STYLES[unknown-token]="fg=white"
+
 # =====================================================
-# Prompt – should come after syntax highlighting in most cases
+# Prompt (last)
 # =====================================================
 zinit ice depth=1
 zinit light romkatv/powerlevel10k
 [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
-
-# =====================================================
-# ZLE / Keybindings
-# =====================================================
-autoload -Uz up-line-or-beginning-search
-autoload -Uz down-line-or-beginning-search
 
 # =====================================================
 # Aliases
@@ -123,3 +112,4 @@ alias py=python3
 alias ls='ls --color=auto'
 alias ll='ls -alF'
 alias grep='grep --color=auto'
+alias gowin="cd /mnt/c/Users/sacho"
