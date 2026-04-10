@@ -1,15 +1,17 @@
 # =====================================================
-# Smart Tmux Autostart
+# Tmux Autostart
 # =====================================================
-if command -v tmux &> /dev/null && \
+if command -v tmux &>/dev/null && \
    [[ -z "$TMUX" ]] && \
    [[ $- == *i* ]] && \
-   [[ "$TERM_PROGRAM" != "vscode" ]]; then
-    exec tmux new-session -A -s main
+   [[ -z "$VSCODE_INJECTION" ]] && \
+   [[ "$TERM_PROGRAM" != "vscode" ]] && \
+   [[ "$INTELLIJ_ENVIRONMENT_READER" != "true" ]]; then
+  exec tmux new-session -A -s main
 fi
 
 # =====================================================
-# Powerlevel10k instant prompt (must stay at top)
+# Powerlevel10k Instant Prompt (must stay near top)
 # =====================================================
 if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
   source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
@@ -20,16 +22,16 @@ fi
 # =====================================================
 export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
 
-# Homebrew (Linuxbrew)
-if [[ -d /home/linuxbrew/.linuxbrew ]]; then
-  export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
-  export MANPATH="/home/linuxbrew/.linuxbrew/share/man:$MANPATH"
-  export INFOPATH="/home/linuxbrew/.linuxbrew/share/info:$INFOPATH"
+# Homebrew — Apple Silicon / Intel macOS / Linuxbrew
+if [[ -x /opt/homebrew/bin/brew ]]; then
+  eval "$(/opt/homebrew/bin/brew shellenv)"
+elif [[ -x /usr/local/bin/brew ]]; then
+  eval "$(/usr/local/bin/brew shellenv)"
+elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
+  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
-# =====================================================
 # Editor
-# =====================================================
 if [[ -n $SSH_CONNECTION ]]; then
   export EDITOR=vim
 else
@@ -39,66 +41,95 @@ fi
 # =====================================================
 # History
 # =====================================================
-HISTFILE=$HOME/.zsh_history
+HISTFILE="$HOME/.zsh_history"
 HISTSIZE=10000
 SAVEHIST=10000
 setopt SHARE_HISTORY
-setopt INC_APPEND_HISTORY
 setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_REDUCE_BLANKS
+setopt HIST_IGNORE_SPACE
 
 # =====================================================
-# zinit
+# Zinit Bootstrap
 # =====================================================
 ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
 if [[ ! -d $ZINIT_HOME ]]; then
+  print -P "%F{yellow}[zinit] Installing...%f"
   mkdir -p "${ZINIT_HOME:h}"
-  git clone https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME"
+  if ! git clone --depth=1 https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME" 2>/dev/null; then
+    print -P "%F{red}[zinit] Clone failed — plugins will not load.%f"
+  fi
 fi
-source "$ZINIT_HOME/zinit.zsh"
+[[ -f "$ZINIT_HOME/zinit.zsh" ]] && source "$ZINIT_HOME/zinit.zsh"
 
 # =====================================================
-# Completion (first)
+# Completion
 # =====================================================
 autoload -Uz compinit
+
+# FIX: glob qualifiers don't expand reliably inside [[ ]].
+# Use find instead — works correctly on all platforms including WSL.
+_zrc_dump="${ZDOTDIR:-$HOME}/.zcompdump"
+if [[ -f $_zrc_dump ]] && [[ $(find "$_zrc_dump" -mmin +1440 2>/dev/null) ]]; then
+  compinit          # dump is >24h old — rebuild
+else
+  compinit -C       # use cache
+fi
+unset _zrc_dump
+
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
-compinit -C
+zstyle ':completion:*' menu select
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+
+# =====================================================
+# Vi Mode (native zsh)
+# =====================================================
+bindkey -v
+KEYTIMEOUT=1
+
+# Emacs-style bindings in insert mode
+bindkey -M viins '^A' beginning-of-line
+bindkey -M viins '^E' end-of-line
+bindkey -M viins '^K' kill-line
+bindkey -M viins '^U' backward-kill-line
+bindkey -M viins '^W' backward-kill-word
+bindkey -M viins '^?' backward-delete-char
+bindkey -M viins '^H' backward-delete-char
+
+# History prefix search with arrow keys
+autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
+zle -N up-line-or-beginning-search
+zle -N down-line-or-beginning-search
+bindkey -M viins '^[[A' up-line-or-beginning-search
+bindkey -M viins '^[[B' down-line-or-beginning-search
+bindkey -M vicmd 'k'    up-line-or-beginning-search
+bindkey -M vicmd 'j'    down-line-or-beginning-search
+
+# FIX: use add-zle-hook-widget instead of zle -N so we CHAIN onto p10k's
+# existing hooks rather than replacing them (which caused crashes).
+autoload -Uz add-zle-hook-widget
+function _zrc_cursor_beam()  { printf '\e[6 q'; }
+function _zrc_cursor_block() { [[ $KEYMAP == vicmd ]] && printf '\e[2 q' || printf '\e[6 q'; }
+add-zle-hook-widget zle-line-init      _zrc_cursor_beam
+add-zle-hook-widget zle-keymap-select  _zrc_cursor_block
 
 # =====================================================
 # Plugins
 # =====================================================
-# fzf-tab (normal version for max stability)
-zinit light Aloxaf/fzf-tab
+# fzf-tab (only if fzf is installed)
+if command -v fzf &>/dev/null; then
+  zinit light Aloxaf/fzf-tab
+  # Safe preview: guard against empty realpath on WSL
+  zstyle ':fzf-tab:complete:cd:*' fzf-preview \
+    '[ -n "$realpath" ] && ls --color=always "$realpath" 2>/dev/null'
+fi
 
-# Vi mode
-KEYTIMEOUT=1
-ZVM_INIT_MODE=sourcing
-ZVM_VI_HIGHLIGHT_BACKGROUND='#504945'
-ZVM_VI_HIGHLIGHT_FOREGROUND='white'
-ZVM_VI_SURROUND_BINDKEY=s-prefix
-
-autoload -Uz up-line-or-beginning-search
-autoload -Uz down-line-or-beginning-search
-
-function zvm_after_init() {
-    zle -N up-line-or-beginning-search
-    zle -N down-line-or-beginning-search
-    bindkey -M viins '^[[A' up-line-or-beginning-search
-    bindkey -M viins '^[[B' down-line-or-beginning-search
-    bindkey -M vicmd 'k' up-line-or-beginning-search
-    bindkey -M vicmd 'j' down-line-or-beginning-search
-}
-
-zinit light jeffreytse/zsh-vi-mode
-
-# Fast syntax highlighting (loaded late)
+# Syntax highlighting — must be last plugin loaded
 zinit light zdharma-continuum/fast-syntax-highlighting
-
-# Unknown commands stay white while typing → turn green when valid
 FAST_HIGHLIGHT_STYLES[unknown-token]="fg=white"
 
 # =====================================================
-# Prompt (last)
+# Prompt
 # =====================================================
 zinit ice depth=1
 zinit light romkatv/powerlevel10k
@@ -109,7 +140,15 @@ zinit light romkatv/powerlevel10k
 # =====================================================
 alias nv=nvim
 alias py=python3
-alias ls='ls --color=auto'
-alias ll='ls -alF'
 alias grep='grep --color=auto'
-alias gowin="cd /mnt/c/Users/sacho"
+
+case "$OSTYPE" in
+  darwin*) alias ls='ls -G';          alias ll='ls -alFG' ;;
+  *)       alias ls='ls --color=auto'; alias ll='ls -alF'  ;;
+esac
+
+# WSL-specific
+if grep -qi microsoft /proc/version 2>/dev/null; then
+  alias open='explorer.exe'
+  alias gowin="cd /mnt/c/Users/sacho"
+fi
