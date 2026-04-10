@@ -74,8 +74,17 @@ return {
 
       local servers = { 'clangd', 'pyright', 'html', 'cssls', 'angularls', 'emmet_ls', 'lua_ls', 'ts_ls' }
 
+      -- On Termux (Android), clangd and lua_ls are installed system-wide via pkg
+      -- and have no ARM64 mason binaries, so exclude them from mason's ensure_installed.
+      local mason_servers = servers
+      if vim.fn.has 'android' == 1 then
+        mason_servers = vim.tbl_filter(function(s)
+          return s ~= 'clangd' and s ~= 'lua_ls'
+        end, servers)
+      end
+
       require('mason-lspconfig').setup {
-        ensure_installed = servers,
+        ensure_installed = mason_servers,
         automatic_enable = false, -- we enable explicitly below
       }
 
