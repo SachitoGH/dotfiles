@@ -96,7 +96,9 @@ return {
     config = function(_, opts)
       require('blink.cmp').setup(opts)
       local set_hl = vim.api.nvim_set_hl
-      set_hl(0, 'BlinkCmpSignatureHelp', { fg = '#808080', bg = vim.fn.synIDattr(vim.fn.hlID('Normal'), 'guibg') })
+      local normal_bg = vim.api.nvim_get_hl(0, { name = 'Normal' }).bg
+      local bg = normal_bg and string.format('#%06x', normal_bg) or 'NONE'
+      set_hl(0, 'BlinkCmpSignatureHelp', { fg = '#808080', bg = bg })
       set_hl(0, 'BlinkCmpSignatureHelpBorder', { link = 'Normal' })
       set_hl(0, 'BlinkCmpMenu', { link = 'Normal' })
       set_hl(0, 'BlinkCmpMenuBorder', { link = 'Normal' })

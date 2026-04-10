@@ -20,8 +20,7 @@ fi
 # =====================================================
 # Environment & PATH
 # =====================================================
-export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
-
+export PATH="$HOME/.npm-global/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
 # Homebrew — Apple Silicon / Intel macOS / Linuxbrew
 if [[ -x /opt/homebrew/bin/brew ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
@@ -138,6 +137,16 @@ zinit light romkatv/powerlevel10k
 # =====================================================
 # Aliases
 # =====================================================
+
+# .. expansion
+function rationalise-dot() {
+  [[ $LBUFFER = *.. ]] && LBUFFER+=/.. || LBUFFER+=.
+}
+zle -N rationalise-dot
+bindkey .    rationalise-dot
+bindkey -M isearch . self-insert
+
+
 alias nv=nvim
 alias py=python3
 alias grep='grep --color=auto'
@@ -146,7 +155,6 @@ case "$OSTYPE" in
   darwin*) alias ls='ls -G';          alias ll='ls -alFG' ;;
   *)       alias ls='ls --color=auto'; alias ll='ls -alF'  ;;
 esac
-
 # WSL-specific
 if grep -qi microsoft /proc/version 2>/dev/null; then
   alias open='explorer.exe'

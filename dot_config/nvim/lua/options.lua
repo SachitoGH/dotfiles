@@ -32,9 +32,6 @@ vim.api.nvim_create_autocmd("RecordingLeave", {
   end,
 })
 
--- hide basic diag
-vim.diagnostic.config { virtual_text = false }
-
 -- Don't show the mode, since it's already in the status line
 vim.o.showmode = false
 
