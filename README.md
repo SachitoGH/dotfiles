@@ -1,5 +1,14 @@
 # dotfiles
 
+Terminal setup built around Neovim, tmux, and zsh — managed with [chezmoi](https://www.chezmoi.io).
+
+- **Shell** — zsh with zinit, Powerlevel10k, vi mode, fzf-tab completion
+- **Editor** — Neovim (lazy.nvim) with LSP, blink-cmp, Treesitter, Telescope, Diffview
+- **Terminal** — tmux with TPM, vim-tmux-navigator, OS-aware clipboard
+- **Dotfile sync** — chezmoi with auto git add/commit/push on every change
+
+Works on WSL, Ubuntu, macOS, and Termux.
+
 ## Bootstrap a new machine
 
 Install chezmoi and apply dotfiles in one command:
