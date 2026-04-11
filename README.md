@@ -1,0 +1,24 @@
+# dotfiles
+
+## Bootstrap a new machine
+
+Install chezmoi and apply dotfiles in one command:
+
+```sh
+sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply git@github.com:SachitoGH/dotfiles.git
+```
+
+This will:
+1. Install chezmoi
+2. Clone this repo
+3. Apply all dotfiles
+4. Run the install script (installs packages, tools, etc.)
+
+## Daily use
+
+| Command | What it does |
+|---|---|
+| `chezmoi re-add` | Sync edits to already-tracked files → commit → push |
+| `chezmoi add <path>` | Track a new file or pick up new files in a directory |
+| `chezmoi status` | See what's changed / untracked |
+| `chezmoi diff` | Preview what `chezmoi apply` would change |

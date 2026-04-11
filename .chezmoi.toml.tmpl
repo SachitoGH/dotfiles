@@ -20,7 +20,7 @@
 # 3-way merge with nvim when chezmoi detects a conflict
 [merge]
     command = "nvim"
-    args    = ["-d", "{{ .Destination }}", "{{ .Source }}", "{{ .Target }}"]
+    args    = ["-d", "{{ `{{ .Destination }}` }}", "{{ `{{ .Source }}` }}", "{{ `{{ .Target }}` }}"]
 
 # Uncomment once delta is installed (apt install git-delta)
 # [diff]
