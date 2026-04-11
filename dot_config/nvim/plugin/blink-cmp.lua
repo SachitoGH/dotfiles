@@ -4,6 +4,11 @@ vim.pack.add({
 })
 
 require('blink.cmp').setup {
+  -- Use Lua fuzzy matching on Termux (no pre-built Rust binary for Android/ARM64)
+  fuzzy = {
+    implementation = vim.fn.isdirectory('/data/data/com.termux') == 1 and 'lua' or 'prefer_rust',
+  },
+
   appearance = {
     nerd_font_variant = 'mono',
   },
