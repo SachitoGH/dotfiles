@@ -149,6 +149,25 @@ bindkey -M isearch . self-insert
 
 alias nv=nvim
 alias py=python3
+
+# Sync ~/.config/nvim → chezmoi (handles edits, additions, and deletions)
+nvim-sync() {
+  # 1. Update source for any modified/added files in destination
+  chezmoi re-add ~/.config/nvim
+
+  # 2. Remove from source any file deleted from destination
+  chezmoi managed --include=files | grep '\.config/nvim' | while read -r rel; do
+    local dest="$HOME/$rel"
+    if [[ ! -e "$dest" ]]; then
+      local src
+      src=$(chezmoi source-path "$dest" 2>/dev/null)
+      [[ -n "$src" && -f "$src" ]] && rm -v "$src"
+    fi
+  done
+
+  # 3. Apply so chezmoi state matches (also triggers auto-commit/push)
+  chezmoi apply ~/.config/nvim
+}
 alias grep='grep --color=auto'
 
 case "$OSTYPE" in
