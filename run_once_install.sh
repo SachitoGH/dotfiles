@@ -7,6 +7,12 @@ set -e
 log() { printf '\033[1;34m>> %s\033[0m\n' "$*"; }
 ok()  { printf '\033[1;32m✓  %s\033[0m\n' "$*"; }
 
+MARKER="${XDG_DATA_HOME:-$HOME/.local/share}/.dotfiles-bootstrapped"
+if [[ -f "$MARKER" ]]; then
+  ok "Already bootstrapped, skipping. Remove $MARKER to re-run."
+  exit 0
+fi
+
 is_termux() { [[ -d /data/data/com.termux ]]; }
 is_macos()  { [[ "$(uname)" == "Darwin" ]]; }
 is_wsl()    { grep -qi microsoft /proc/version 2>/dev/null; }
@@ -85,4 +91,5 @@ else
   install_linux
 fi
 
+touch "$MARKER"
 ok "Bootstrap complete — open a new shell to apply changes"
