@@ -18,10 +18,10 @@ if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]
 fi
 
 # =====================================================
-# Environment & PATH
+# Environment
 # =====================================================
 export PATH="$HOME/.npm-global/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
-# Homebrew — Apple Silicon / Intel macOS / Linuxbrew
+
 if [[ -x /opt/homebrew/bin/brew ]]; then
   eval "$(/opt/homebrew/bin/brew shellenv)"
 elif [[ -x /usr/local/bin/brew ]]; then
@@ -30,11 +30,16 @@ elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
   eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
 fi
 
-# Editor
 if [[ -n $SSH_CONNECTION ]]; then
   export EDITOR=vim
 else
   export EDITOR=nvim
+fi
+
+# WSL: systemd-logind doesn't reliably create XDG_RUNTIME_DIR
+if [[ -n "$XDG_RUNTIME_DIR" && ! -d "$XDG_RUNTIME_DIR" ]]; then
+  mkdir -p "$XDG_RUNTIME_DIR"
+  chmod 700 "$XDG_RUNTIME_DIR"
 fi
 
 # =====================================================
@@ -66,13 +71,12 @@ fi
 # =====================================================
 autoload -Uz compinit
 
-# FIX: glob qualifiers don't expand reliably inside [[ ]].
-# Use find instead — works correctly on all platforms including WSL.
+# Use find instead of glob: glob qualifiers don't expand reliably in [[ ]] on WSL
 _zrc_dump="${ZDOTDIR:-$HOME}/.zcompdump"
 if [[ -f $_zrc_dump ]] && [[ $(find "$_zrc_dump" -mmin +1440 2>/dev/null) ]]; then
-  compinit          # dump is >24h old — rebuild
+  compinit
 else
-  compinit -C       # use cache
+  compinit -C
 fi
 unset _zrc_dump
 
@@ -81,7 +85,7 @@ zstyle ':completion:*' menu select
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
 # =====================================================
-# Vi Mode (native zsh)
+# Vi Mode & Keybindings
 # =====================================================
 bindkey -v
 KEYTIMEOUT=1
@@ -95,7 +99,7 @@ bindkey -M viins '^W' backward-kill-word
 bindkey -M viins '^?' backward-delete-char
 bindkey -M viins '^H' backward-delete-char
 
-# History prefix search with arrow keys
+# Arrow keys: history prefix search
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
@@ -104,8 +108,15 @@ bindkey -M viins '^[[B' down-line-or-beginning-search
 bindkey -M vicmd 'k'    up-line-or-beginning-search
 bindkey -M vicmd 'j'    down-line-or-beginning-search
 
-# FIX: use add-zle-hook-widget instead of zle -N so we CHAIN onto p10k's
-# existing hooks rather than replacing them (which caused crashes).
+# .. expands to ../
+function rationalise-dot() {
+  [[ $LBUFFER = *.. ]] && LBUFFER+=/.. || LBUFFER+=.
+}
+zle -N rationalise-dot
+bindkey .           rationalise-dot
+bindkey -M isearch . self-insert
+
+# Cursor shape: beam in insert, block in normal
 autoload -Uz add-zle-hook-widget
 function _zrc_cursor_beam()  { printf '\e[6 q'; }
 function _zrc_cursor_block() { [[ $KEYMAP == vicmd ]] && printf '\e[2 q' || printf '\e[6 q'; }
@@ -113,23 +124,17 @@ add-zle-hook-widget zle-line-init      _zrc_cursor_beam
 add-zle-hook-widget zle-keymap-select  _zrc_cursor_block
 
 # =====================================================
-# Plugins
+# Plugins & Prompt
 # =====================================================
-# fzf-tab (only if fzf is installed)
 if command -v fzf &>/dev/null; then
   zinit light Aloxaf/fzf-tab
-  # Safe preview: guard against empty realpath on WSL
   zstyle ':fzf-tab:complete:cd:*' fzf-preview \
     '[ -n "$realpath" ] && ls --color=always "$realpath" 2>/dev/null'
 fi
 
-# Syntax highlighting — must be last plugin loaded
 zinit light zdharma-continuum/fast-syntax-highlighting
 FAST_HIGHLIGHT_STYLES[unknown-token]="fg=white"
 
-# =====================================================
-# Prompt
-# =====================================================
 zinit ice depth=1
 zinit light romkatv/powerlevel10k
 [[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
@@ -137,25 +142,28 @@ zinit light romkatv/powerlevel10k
 # =====================================================
 # Aliases
 # =====================================================
-
-# .. expansion
-function rationalise-dot() {
-  [[ $LBUFFER = *.. ]] && LBUFFER+=/.. || LBUFFER+=.
-}
-zle -N rationalise-dot
-bindkey .    rationalise-dot
-bindkey -M isearch . self-insert
-
-
 alias nv=nvim
 alias py=python3
+alias grep='grep --color=auto'
+
+case "$OSTYPE" in
+  darwin*) alias ls='ls -G';           alias ll='ls -alFG' ;;
+  *)       alias ls='ls --color=auto'; alias ll='ls -alF'  ;;
+esac
+
+if grep -qi microsoft /proc/version 2>/dev/null; then
+  alias open='explorer.exe'
+  alias gowin='cd /mnt/c/Users/sacho'
+fi
+
+# =====================================================
+# Functions
+# =====================================================
 
 # Sync ~/.config/nvim → chezmoi (handles edits, additions, and deletions)
 nvim-sync() {
-  # 1. Update source for any modified/added files in destination
   chezmoi re-add ~/.config/nvim
 
-  # 2. Remove from source any file deleted from destination
   chezmoi managed --include=files | grep '\.config/nvim' | while read -r rel; do
     local dest="$HOME/$rel"
     if [[ ! -e "$dest" ]]; then
@@ -165,17 +173,5 @@ nvim-sync() {
     fi
   done
 
-  # 3. Apply so chezmoi state matches (also triggers auto-commit/push)
   chezmoi apply ~/.config/nvim
 }
-alias grep='grep --color=auto'
-
-case "$OSTYPE" in
-  darwin*) alias ls='ls -G';          alias ll='ls -alFG' ;;
-  *)       alias ls='ls --color=auto'; alias ll='ls -alF'  ;;
-esac
-# WSL-specific
-if grep -qi microsoft /proc/version 2>/dev/null; then
-  alias open='explorer.exe'
-  alias gowin='cd /mnt/c/Users/sacho'
-fi
