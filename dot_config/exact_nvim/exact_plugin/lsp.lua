@@ -18,17 +18,17 @@ vim.api.nvim_create_autocmd('LspAttach', {
     -- K (hover), <C-S> (signature_help).
     -- Override some to use fzf-lua instead of quickfix:
     local fzf = require 'fzf-lua'
-    map('grr', fzf.lsp_references, 'Goto References')
-    map('gri', fzf.lsp_implementations, 'Goto Implementation')
-    map('grd', fzf.lsp_definitions, 'Goto Definition')
-    map('grD', vim.lsp.buf.declaration, 'Goto Declaration')
-    map('gO', fzf.lsp_document_symbols, 'Document Symbols')
-    map('gW', fzf.lsp_live_workspace_symbols, 'Workspace Symbols')
-    map('grt', fzf.lsp_typedefs, 'Type Definition')
+    map('grr', fzf.lsp_references, 'Go to references')
+    map('gri', fzf.lsp_implementations, 'Go to implementation')
+    map('grd', fzf.lsp_definitions, 'Go to definition')
+    map('grD', vim.lsp.buf.declaration, 'Go to declaration')
+    map('gO', fzf.lsp_document_symbols, 'Document symbols')
+    map('gW', fzf.lsp_live_workspace_symbols, 'Workspace symbols')
+    map('grt', fzf.lsp_typedefs, 'Go to type definition')
     map('<Leader>d', vim.diagnostic.open_float, 'Show diagnostics')
     map('<Leader>tv', function()
       vim.diagnostic.config { virtual_text = not vim.diagnostic.config().virtual_text }
-    end, '[T]oggle [V]irtual text')
+    end, 'Toggle virtual text')
 
     -- Document highlight on cursor hold
     local client = vim.lsp.get_client_by_id(event.data.client_id)

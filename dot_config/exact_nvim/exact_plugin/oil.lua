@@ -25,4 +25,4 @@ end
 
 vim.keymap.set('n', '<leader>o', function()
   toggle_oil(vim.fn.expand '%:p:h')
-end, { desc = "Oil: Toggle float in current file's directory" })
+end, { desc = 'Toggle file explorer' })
