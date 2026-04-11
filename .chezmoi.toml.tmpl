@@ -1,0 +1,27 @@
+# chezmoi configuration
+# docs: https://www.chezmoi.io/reference/configuration-file/
+
+# Template data — use these in managed dotfiles as {{ .name }}, {{ .email }}, etc.
+# Override per machine by setting values in ~/.config/chezmoi/chezmoi.toml (not in dotfiles repo)
+[data]
+    name  = "SachitoGH"
+    email = "sachouleptitfou@gmail.com"
+
+[edit]
+    command = "nvim"
+
+# Auto-sync: chezmoi add → git add + commit + push automatically
+[git]
+    autoAdd    = true
+    autoCommit = true
+    autoPush   = true
+    commitMessageTemplate = "chore: update dotfiles [{{ .chezmoi.hostname }}]"
+
+# 3-way merge with nvim when chezmoi detects a conflict
+[merge]
+    command = "nvim"
+    args    = ["-d", "{{ .Destination }}", "{{ .Source }}", "{{ .Target }}"]
+
+# Uncomment once delta is installed (apt install git-delta)
+# [diff]
+#     pager = "delta"

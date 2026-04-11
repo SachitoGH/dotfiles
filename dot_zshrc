@@ -7,7 +7,7 @@ if command -v tmux &>/dev/null && \
    [[ -z "$VSCODE_INJECTION" ]] && \
    [[ "$TERM_PROGRAM" != "vscode" ]] && \
    [[ "$INTELLIJ_ENVIRONMENT_READER" != "true" ]]; then
-  exec tmux new-session -A -s main
+  exec tmux new-session
 fi
 
 # =====================================================
@@ -158,5 +158,5 @@ esac
 # WSL-specific
 if grep -qi microsoft /proc/version 2>/dev/null; then
   alias open='explorer.exe'
-  alias gowin="cd /mnt/c/Users/sacho"
+  alias gowin='cd /mnt/c/Users/sacho'
 fi
