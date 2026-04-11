@@ -22,11 +22,11 @@ vim.keymap.set('n', '<leader>gd', function()
   vim.cmd 'DiffviewOpen'
   vim.cmd 'DiffviewToggleFiles'
   vim.cmd 'wincmd ='
-end, { desc = 'Open Diffview (no file panel)' })
+end, { desc = 'Git: Open diff view' })
 
-vim.keymap.set('n', '<leader>gD', '<cmd>DiffviewClose<CR>', { desc = 'Close Diffview' })
+vim.keymap.set('n', '<leader>gD', '<cmd>DiffviewClose<CR>', { desc = 'Git: Close diff view' })
 
 vim.keymap.set('n', '<leader>gt', function()
   vim.cmd 'DiffviewToggleFiles'
   vim.cmd 'wincmd ='
-end, { desc = 'Toggle Diffview Files' })
+end, { desc = 'Git: Toggle diff file panel' })

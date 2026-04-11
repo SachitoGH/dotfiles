@@ -33,28 +33,28 @@ LSP servers: clangd, pyright, html, cssls, angularls, emmet_ls, lua_ls, ts_ls
 | Key | Action |
 |-----|--------|
 | `<C-h/j/k/l>` | Navigate tmux/vim panes |
-| `<C-\>` | Previous tmux pane |
+| `<C-\>` | Navigate to previous pane |
 | `<C-a/x>` | Increment/decrement (dial) |
 
 ### Search (`<leader>s`)
 
 | Key | Action |
 |-----|--------|
-| `sf` | Files |
+| `sf` | Search files |
 | `sg` | Live grep |
-| `sw` | Grep current word |
-| `sh` | Help tags |
-| `sk` | Keymaps |
-| `sd` | Diagnostics |
+| `sw` | Search word under cursor |
+| `sh` | Search help tags |
+| `sk` | Search keymaps |
+| `sd` | Search diagnostics |
 | `sr` | Resume last search |
-| `ss` | Select fzf-lua picker |
-| `sn` | Neovim config files |
-| `s.` | Recent files |
-| `s/` | Grep in open files |
+| `ss` | Browse fzf-lua pickers |
+| `sn` | Search neovim config |
+| `s.` | Search recent files |
+| `s/` | Live grep in open files |
 
 | Key | Action |
 |-----|--------|
-| `<leader>/` | Fuzzy search current buffer |
+| `<leader>/` | Fuzzy search in buffer |
 | `<leader><leader>` | Switch buffer |
 
 ### Git Hunks (`<leader>h`)
@@ -63,7 +63,7 @@ LSP servers: clangd, pyright, html, cssls, angularls, emmet_ls, lua_ls, ts_ls
 |-----|--------|
 | `hs/hr` | Stage/reset hunk |
 | `hS/hR` | Stage/reset buffer |
-| `hu` | Undo stage hunk |
+| `hu` | Undo staged hunk |
 | `hp` | Preview hunk |
 | `hb` | Blame line |
 | `hd/hD` | Diff against index/last commit |
@@ -72,44 +72,44 @@ LSP servers: clangd, pyright, html, cssls, angularls, emmet_ls, lua_ls, ts_ls
 
 | Key | Action |
 |-----|--------|
-| `gd` | Open diffview |
-| `gD` | Close diffview |
-| `gt` | Toggle file panel |
+| `gd` | Open diff view |
+| `gD` | Close diff view |
+| `gt` | Toggle diff file panel |
 
 ### Toggle (`<leader>t`)
 
 | Key | Action |
 |-----|--------|
-| `tb` | Git blame line |
-| `tD` | Inline deleted |
-| `tv` | LSP virtual text |
+| `tb` | Git: Toggle blame line |
+| `tD` | Git: Toggle deleted lines |
+| `tv` | LSP: Toggle virtual text |
 
 ### Misc (`<leader>`)
 
 | Key | Action |
 |-----|--------|
-| `o` | Oil file explorer |
-| `u` | Undo tree |
-| `d` | Diagnostic float |
+| `o` | Toggle file explorer |
+| `u` | Toggle undo tree |
+| `d` | LSP: Show diagnostics |
 | `f` | Format buffer |
-| `ap/aP` | Swap next/prev parameter |
+| `ap/aP` | Swap with next/prev parameter |
 
 ### LSP (`gr` prefix)
 
 | Key | Action |
 |-----|--------|
-| `grr` | References |
-| `gri` | Implementation |
-| `grd` | Definition |
-| `grD` | Declaration |
-| `grt` | Type definition |
-| `grn` | Rename |
-| `gra` | Code action |
-| `grx` | Codelens run |
+| `grr` | Go to references |
+| `gri` | Go to implementation |
+| `grd` | Go to definition |
+| `grD` | Go to declaration |
+| `grt` | Go to type definition |
+| `grn` | Rename (built-in) |
+| `gra` | Code action (built-in) |
+| `grx` | Codelens run (built-in) |
 | `gO` | Document symbols |
 | `gW` | Workspace symbols |
-| `K` | Hover |
-| `<C-S>` | Signature help (insert) |
+| `K` | Hover (built-in) |
+| `<C-S>` | Signature help, insert mode (built-in) |
 
 ### Jump (`]`/`[` + key)
 

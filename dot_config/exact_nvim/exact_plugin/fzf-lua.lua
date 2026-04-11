@@ -13,23 +13,23 @@ require('fzf-lua').setup {
 require('fzf-lua').register_ui_select()
 
 local fzf = require 'fzf-lua'
-vim.keymap.set('n', '<leader>sh', fzf.helptags, { desc = '[S]earch [H]elp' })
-vim.keymap.set('n', '<leader>sk', fzf.keymaps, { desc = '[S]earch [K]eymaps' })
-vim.keymap.set('n', '<leader>sf', fzf.files, { desc = '[S]earch [F]iles' })
-vim.keymap.set('n', '<leader>ss', fzf.builtin, { desc = '[S]earch [S]elect fzf-lua' })
-vim.keymap.set('n', '<leader>sw', fzf.grep_cword, { desc = '[S]earch current [W]ord' })
-vim.keymap.set('n', '<leader>sg', fzf.live_grep, { desc = '[S]earch by [G]rep' })
-vim.keymap.set('n', '<leader>sd', fzf.diagnostics_document, { desc = '[S]earch [D]iagnostics' })
-vim.keymap.set('n', '<leader>sr', fzf.resume, { desc = '[S]earch [R]esume' })
-vim.keymap.set('n', '<leader>s.', fzf.oldfiles, { desc = '[S]earch Recent Files' })
-vim.keymap.set('n', '<leader><leader>', fzf.buffers, { desc = '[ ] Find existing buffers' })
+vim.keymap.set('n', '<leader>sh', fzf.helptags, { desc = 'Search help tags' })
+vim.keymap.set('n', '<leader>sk', fzf.keymaps, { desc = 'Search keymaps' })
+vim.keymap.set('n', '<leader>sf', fzf.files, { desc = 'Search files' })
+vim.keymap.set('n', '<leader>ss', fzf.builtin, { desc = 'Browse fzf-lua pickers' })
+vim.keymap.set('n', '<leader>sw', fzf.grep_cword, { desc = 'Search word under cursor' })
+vim.keymap.set('n', '<leader>sg', fzf.live_grep, { desc = 'Live grep' })
+vim.keymap.set('n', '<leader>sd', fzf.diagnostics_document, { desc = 'Search diagnostics' })
+vim.keymap.set('n', '<leader>sr', fzf.resume, { desc = 'Resume last search' })
+vim.keymap.set('n', '<leader>s.', fzf.oldfiles, { desc = 'Search recent files' })
+vim.keymap.set('n', '<leader><leader>', fzf.buffers, { desc = 'Switch buffer' })
 
-vim.keymap.set('n', '<leader>/', fzf.blines, { desc = '[/] Fuzzily search in current buffer' })
+vim.keymap.set('n', '<leader>/', fzf.blines, { desc = 'Fuzzy search in buffer' })
 
 vim.keymap.set('n', '<leader>s/', function()
   fzf.live_grep { grep_open_files = true }
-end, { desc = '[S]earch [/] in Open Files' })
+end, { desc = 'Live grep in open files' })
 
 vim.keymap.set('n', '<leader>sn', function()
   fzf.files { cwd = vim.fn.stdpath 'config' }
-end, { desc = '[S]earch [N]eovim files' })
+end, { desc = 'Search neovim config' })
