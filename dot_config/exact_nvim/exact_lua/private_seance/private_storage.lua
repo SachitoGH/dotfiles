@@ -2,7 +2,8 @@
 -- Persists sessions as JSON files under ~/.local/share/nvim/seance/
 -- Directory per file, named by a simple hash + filename for readability.
 
-local M = {}
+local M  = {}
+local uv = vim.uv or vim.loop
 
 -- Map a filepath to a unique, filesystem-safe directory name
 local function session_dir(filepath)
@@ -26,11 +27,11 @@ function M.save(session)
   local dir = session_dir(session.file)
   vim.fn.mkdir(dir, "p")
 
-  local path     = dir .. "/" .. session.started_at .. ".json"
+  local path     = dir .. "/" .. math.floor(uv.hrtime() / 1e6) .. ".json"
   local ok, data = pcall(vim.json.encode, session)
 
   if not ok then
-    vim.notify("séance: could not encode session — " .. tostring(data), vim.log.levels.ERROR)
+    vim.notify("seance: could not encode session - " .. tostring(data), vim.log.levels.ERROR)
     return
   end
 
@@ -40,7 +41,7 @@ function M.save(session)
     f:close()
     M._prune(session.file)
   else
-    vim.notify("séance: could not write session to " .. path, vim.log.levels.ERROR)
+    vim.notify("seance: could not write session to " .. path, vim.log.levels.ERROR)
   end
 end
 

@@ -1,4 +1,4 @@
--- séance.nvim
+-- seance.nvim
 -- Record your editing sessions silently. Replay them as a ghost.
 
 local M = {}
@@ -13,6 +13,10 @@ M.config = {
 
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+
+  vim.api.nvim_create_user_command("Seance", function()
+    M.open()
+  end, { desc = "Open seance session picker" })
 
   if not M.config.auto_record then return end
 
@@ -51,10 +55,6 @@ function M.setup(opts)
       end
     end,
   })
-
-  vim.api.nvim_create_user_command("Seance", function()
-    M.open()
-  end, { desc = "Open séance session picker" })
 end
 
 -- Open the session picker for the current buffer's file
@@ -63,7 +63,7 @@ function M.open()
   local path = vim.api.nvim_buf_get_name(buf)
 
   if path == "" then
-    vim.notify("séance: current buffer has no file path", vim.log.levels.WARN)
+    vim.notify("seance: current buffer has no file path", vim.log.levels.WARN)
     return
   end
 
