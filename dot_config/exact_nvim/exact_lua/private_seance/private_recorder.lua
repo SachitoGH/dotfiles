@@ -47,8 +47,6 @@ function M.start(bufnr)
         lines    = lines,       -- new content from firstline..new_lastline-1
       })
     end,
-    -- on_detach is a no-op; BufUnload autocmd handles saving
-    on_detach = function() end,
   })
 end
 

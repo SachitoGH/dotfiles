@@ -3,25 +3,16 @@
 
 local M = {}
 
-local HEADER = 3  -- number of fixed lines before the session list
-
--- ─── Picker ──────────────────────────────────────────────────────────────────
+-- Picker
 
 function M.open_picker(sessions, filepath, on_select)
   if #sessions == 0 then
-    vim.notify("séance: no recordings found for this file", vim.log.levels.INFO)
+    vim.notify("seance: no recordings found for this file", vim.log.levels.INFO)
     return
   end
 
-  local fname = vim.fn.fnamemodify(filepath, ":t")
-  local sep   = string.rep("─", 48)
-
   -- Build buffer lines
-  local lines = {
-    "  👻 séance",
-    "  " .. fname,
-    "  " .. sep,
-  }
+  local lines = {}
 
   for i, s in ipairs(sessions) do
     lines[#lines + 1] = string.format(
@@ -57,7 +48,7 @@ function M.open_picker(sessions, filepath, on_select)
     col       = col,
     style     = "minimal",
     border    = "rounded",
-    title     = " séance ",
+    title     = " seance ",
     title_pos = "center",
   })
 
@@ -65,14 +56,14 @@ function M.open_picker(sessions, filepath, on_select)
   vim.api.nvim_set_option_value("wrap",       false, { win = win })
 
   -- Start on first session
-  vim.api.nvim_win_set_cursor(win, { HEADER + 1, 0 })
+  vim.api.nvim_win_set_cursor(win, { 1, 0 })
 
-  -- ── Helpers ────────────────────────────────────────────────────────────────
+  -- Helpers
 
   local function get_idx()
     if not vim.api.nvim_win_is_valid(win) then return nil end
     local ln  = vim.api.nvim_win_get_cursor(win)[1]
-    local idx = ln - HEADER
+    local idx = ln
     if idx >= 1 and idx <= #sessions then return idx end
     return nil
   end
@@ -88,7 +79,7 @@ function M.open_picker(sessions, filepath, on_select)
     end)
   end
 
-  -- ── Keymaps ────────────────────────────────────────────────────────────────
+  -- Keymaps
 
   local ko = { noremap = true, silent = true, buffer = buf, nowait = true }
 
@@ -98,14 +89,14 @@ function M.open_picker(sessions, filepath, on_select)
   vim.keymap.set("n", "j", function()
     local idx = get_idx()
     if idx and idx < #sessions then
-      vim.api.nvim_win_set_cursor(win, { HEADER + idx + 1, 0 })
+      vim.api.nvim_win_set_cursor(win, { idx + 1, 0 })
     end
   end, ko)
 
   vim.keymap.set("n", "k", function()
     local idx = get_idx()
     if idx and idx > 1 then
-      vim.api.nvim_win_set_cursor(win, { HEADER + idx - 1, 0 })
+      vim.api.nvim_win_set_cursor(win, { idx - 1, 0 })
     end
   end, ko)
 
@@ -128,7 +119,7 @@ function M.open_picker(sessions, filepath, on_select)
   end, ko)
 end
 
--- ─── Formatting helpers ───────────────────────────────────────────────────────
+-- Formatting helpers
 
 function M._fmt_age(unix_ts)
   local diff = os.time() - (unix_ts or 0)

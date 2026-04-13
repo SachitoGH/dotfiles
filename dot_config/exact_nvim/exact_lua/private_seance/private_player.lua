@@ -6,7 +6,7 @@ local M   = {}
 local uv  = vim.uv or vim.loop
 local state = nil  -- single active replay
 
--- ─── Timer helpers ───────────────────────────────────────────────────────────
+-- Timer helpers
 
 local function make_timer(delay_ms, callback)
   local t = uv.new_timer()
@@ -35,7 +35,7 @@ local function cancel_timer(t)
   end
 end
 
--- ─── Public API ──────────────────────────────────────────────────────────────
+-- Public API
 
 function M.play(session)
   if state then M.stop() end
@@ -51,14 +51,14 @@ function M.play(session)
 
   -- Configure the scratch buffer
   local fname = vim.fn.fnamemodify(session.file, ":t")
-  local ext   = vim.fn.fnamemodify(session.file, ":e")
 
   vim.api.nvim_set_option_value("buftype",   "nofile", { buf = buf })
   vim.api.nvim_set_option_value("swapfile",  false,    { buf = buf })
   vim.api.nvim_set_option_value("bufhidden", "wipe",   { buf = buf })
   vim.api.nvim_set_option_value("modifiable", true,    { buf = buf })
-  if ext ~= "" then
-    vim.api.nvim_set_option_value("filetype", ext, { buf = buf })
+  local ft = vim.filetype.match({ filename = session.file })
+  if ft then
+    vim.api.nvim_set_option_value("filetype", ft, { buf = buf })
   end
   -- Name must not clash with a real path
   pcall(vim.api.nvim_buf_set_name, buf, "seance://" .. fname)
@@ -133,7 +133,7 @@ function M.adjust_speed(factor)
   M._update_hud()
 end
 
--- ─── Internal ────────────────────────────────────────────────────────────────
+-- Internal
 
 function M._tick()
   if not state or state.paused then return end
@@ -202,12 +202,12 @@ function M._update_hud(done)
 
   local line
   if done then
-    line = "  👻 séance · done" .. spd_str .. "  [q/esc] close"
+    line = "  seance · done" .. spd_str .. "  [q/esc] close"
   elseif state.paused then
-    line = string.format("  👻 séance · PAUSED %d%%%s  [space] resume  [esc] stop  [=/-] speed",
+    line = string.format("  seance · PAUSED %d%%%s  [space] resume  [esc] stop  [=/-] speed",
       pct, spd_str)
   else
-    line = string.format("  👻 séance · %d%%%s  [space] pause  [esc] stop  [=/-] speed",
+    line = string.format("  seance · %d%%%s  [space] pause  [esc] stop  [=/-] speed",
       pct, spd_str)
   end
 
