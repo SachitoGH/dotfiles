@@ -51,6 +51,10 @@ function M.setup(opts)
       end
     end,
   })
+
+  vim.api.nvim_create_user_command("Seance", function()
+    M.open()
+  end, { desc = "Open séance session picker" })
 end
 
 -- Open the session picker for the current buffer's file

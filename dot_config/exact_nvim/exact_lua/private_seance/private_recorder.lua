@@ -11,7 +11,7 @@ function M.start(bufnr)
   if not vim.api.nvim_buf_is_valid(bufnr) then return end
 
   -- Only record normal file buffers
-  local ok, buftype = pcall(vim.api.nvim_buf_get_option, bufnr, "buftype")
+  local ok, buftype = pcall(vim.api.nvim_get_option_value, "buftype", { buf = bufnr })
   if not ok or buftype ~= "" then return end
 
   local name = vim.api.nvim_buf_get_name(bufnr)

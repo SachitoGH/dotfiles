@@ -53,19 +53,19 @@ function M.play(session)
   local fname = vim.fn.fnamemodify(session.file, ":t")
   local ext   = vim.fn.fnamemodify(session.file, ":e")
 
-  vim.api.nvim_buf_set_option(buf, "buftype",   "nofile")
-  vim.api.nvim_buf_set_option(buf, "swapfile",  false)
-  vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(buf, "modifiable", true)
+  vim.api.nvim_set_option_value("buftype",   "nofile", { buf = buf })
+  vim.api.nvim_set_option_value("swapfile",  false,    { buf = buf })
+  vim.api.nvim_set_option_value("bufhidden", "wipe",   { buf = buf })
+  vim.api.nvim_set_option_value("modifiable", true,    { buf = buf })
   if ext ~= "" then
-    vim.api.nvim_buf_set_option(buf, "filetype", ext)
+    vim.api.nvim_set_option_value("filetype", ext, { buf = buf })
   end
   -- Name must not clash with a real path
   pcall(vim.api.nvim_buf_set_name, buf, "seance://" .. fname)
 
   -- Load the snapshot (array of lines, no splitting needed)
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, session.snapshot)
-  vim.api.nvim_buf_set_option(buf, "modifiable", false)
+  vim.api.nvim_set_option_value("modifiable", false, { buf = buf })
 
   state = {
     buf     = buf,
@@ -168,9 +168,9 @@ function M._apply(event)
   end
 
   local ok = pcall(function()
-    vim.api.nvim_buf_set_option(state.buf, "modifiable", true)
+    vim.api.nvim_set_option_value("modifiable", true,  { buf = state.buf })
     vim.api.nvim_buf_set_lines(state.buf, event.first, event.last, false, event.lines)
-    vim.api.nvim_buf_set_option(state.buf, "modifiable", false)
+    vim.api.nvim_set_option_value("modifiable", false, { buf = state.buf })
 
     if vim.api.nvim_win_is_valid(state.win) then
       local line_count = vim.api.nvim_buf_line_count(state.buf)
@@ -211,7 +211,7 @@ function M._update_hud(done)
       pct, spd_str)
   end
 
-  pcall(vim.api.nvim_win_set_option, state.win, "statusline", line)
+  pcall(vim.api.nvim_set_option_value, "statusline", line, { win = state.win })
 end
 
 return M
