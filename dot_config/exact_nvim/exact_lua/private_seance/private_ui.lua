@@ -43,11 +43,11 @@ function M.open_picker(sessions, filepath, on_select)
   local col    = math.max(0, math.floor((vim.o.columns - width)  / 2))
 
   local buf = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_buf_set_option(buf, "buftype",  "nofile")
-  vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-  vim.api.nvim_buf_set_option(buf, "modifiable", true)
+  vim.api.nvim_set_option_value("buftype",   "nofile", { buf = buf })
+  vim.api.nvim_set_option_value("bufhidden", "wipe",   { buf = buf })
+  vim.api.nvim_set_option_value("modifiable", true,    { buf = buf })
   vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
-  vim.api.nvim_buf_set_option(buf, "modifiable", false)
+  vim.api.nvim_set_option_value("modifiable", false,   { buf = buf })
 
   local win = vim.api.nvim_open_win(buf, true, {
     relative  = "editor",
@@ -61,8 +61,8 @@ function M.open_picker(sessions, filepath, on_select)
     title_pos = "center",
   })
 
-  vim.api.nvim_win_set_option(win, "cursorline", true)
-  vim.api.nvim_win_set_option(win, "wrap", false)
+  vim.api.nvim_set_option_value("cursorline", true,  { win = win })
+  vim.api.nvim_set_option_value("wrap",       false, { win = win })
 
   -- Start on first session
   vim.api.nvim_win_set_cursor(win, { HEADER + 1, 0 })
