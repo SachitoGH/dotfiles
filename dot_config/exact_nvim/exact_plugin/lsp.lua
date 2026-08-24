@@ -1,12 +1,8 @@
-vim.pack.add({
-  'https://github.com/neovim/nvim-lspconfig',
-  'https://github.com/mason-org/mason.nvim',
-  'https://github.com/mason-org/mason-lspconfig.nvim',
-})
-
 require('mason').setup {}
 
 -- LSP keymaps
+local highlight_group = vim.api.nvim_create_augroup('lsp-highlight', { clear = false })
+
 vim.api.nvim_create_autocmd('LspAttach', {
   callback = function(event)
     local map = function(keys, func, desc, mode)
@@ -17,14 +13,18 @@ vim.api.nvim_create_autocmd('LspAttach', {
     -- grr (references), gri (implementation), grt (type_def), gO (symbols),
     -- K (hover), <C-S> (signature_help).
     -- Override some to use fzf-lua instead of quickfix:
-    local fzf = require 'fzf-lua'
-    map('grr', fzf.lsp_references, 'Go to references')
-    map('gri', fzf.lsp_implementations, 'Go to implementation')
-    map('grd', fzf.lsp_definitions, 'Go to definition')
+    local has_fzf, fzf = pcall(require, 'fzf-lua')
+    if has_fzf then
+      map('grr', fzf.lsp_references, 'Go to references')
+      map('gri', fzf.lsp_implementations, 'Go to implementation')
+      map('grd', fzf.lsp_definitions, 'Go to definition')
+      map('gO', fzf.lsp_document_symbols, 'Document symbols')
+      map('gW', fzf.lsp_live_workspace_symbols, 'Workspace symbols')
+      map('grt', fzf.lsp_typedefs, 'Go to type definition')
+    else
+      map('grd', vim.lsp.buf.definition, 'Go to definition')
+    end
     map('grD', vim.lsp.buf.declaration, 'Go to declaration')
-    map('gO', fzf.lsp_document_symbols, 'Document symbols')
-    map('gW', fzf.lsp_live_workspace_symbols, 'Workspace symbols')
-    map('grt', fzf.lsp_typedefs, 'Go to type definition')
     map('<Leader>d', vim.diagnostic.open_float, 'Show diagnostics')
     map('<Leader>tv', function()
       vim.diagnostic.config { virtual_text = not vim.diagnostic.config().virtual_text }
@@ -32,15 +32,35 @@ vim.api.nvim_create_autocmd('LspAttach', {
 
     -- Document highlight on cursor hold
     local client = vim.lsp.get_client_by_id(event.data.client_id)
-    if client and client:supports_method('textDocument/documentHighlight') then
-      local group = vim.api.nvim_create_augroup('lsp-highlight', { clear = false })
+    if client and client:supports_method 'textDocument/documentHighlight' then
+      vim.api.nvim_clear_autocmds { group = highlight_group, buffer = event.buf }
       vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
-        buffer = event.buf, group = group, callback = vim.lsp.buf.document_highlight,
+        buffer = event.buf,
+        group = highlight_group,
+        callback = vim.lsp.buf.document_highlight,
       })
       vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
-        buffer = event.buf, group = group, callback = vim.lsp.buf.clear_references,
+        buffer = event.buf,
+        group = highlight_group,
+        callback = vim.lsp.buf.clear_references,
       })
     end
+  end,
+})
+
+vim.api.nvim_create_autocmd('LspDetach', {
+  callback = function(event)
+    vim.schedule(function()
+      local has_highlight = vim.iter(vim.lsp.get_clients { bufnr = event.buf }):any(function(client)
+        return client:supports_method 'textDocument/documentHighlight'
+      end)
+      if not has_highlight then
+        if vim.api.nvim_buf_is_valid(event.buf) then
+          vim.api.nvim_buf_call(event.buf, vim.lsp.buf.clear_references)
+          vim.api.nvim_clear_autocmds { group = highlight_group, buffer = event.buf }
+        end
+      end
+    end)
   end,
 })
 
@@ -61,7 +81,7 @@ vim.lsp.config('*', {
 -- Server-specific overrides live in lsp/*.lua files (0.12 convention).
 -- nvim-lspconfig provides base configs; our lsp/ dir merges on top.
 
-local servers = { 'clangd', 'pyright', 'html', 'cssls', 'angularls', 'emmet_ls', 'lua_ls', 'ts_ls' }
+local servers = { 'clangd', 'pyright', 'html', 'cssls', 'lua_ls', 'ts_ls' }
 
 -- On Termux (Android), clangd and lua_ls are installed system-wide via pkg
 local mason_servers = servers
@@ -78,9 +98,4 @@ require('mason-lspconfig').setup {
 
 vim.lsp.enable(servers)
 
--- Convenience commands removed in 0.12
-vim.api.nvim_create_user_command('LspInfo', 'checkhealth vim.lsp', { desc = 'LSP info' })
-vim.api.nvim_create_user_command('LspLog', function()
-  vim.cmd.edit(vim.fs.joinpath(vim.fn.stdpath('state'), 'lsp.log'))
-end, { desc = 'LSP log' })
-vim.api.nvim_create_user_command('LspRestart', 'lsp restart', { desc = 'LSP restart' })
+vim.api.nvim_create_user_command('LspInfo', 'checkhealth vim.lsp', { desc = 'LSP health and status' })

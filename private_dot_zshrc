@@ -7,7 +7,8 @@ if command -v tmux &>/dev/null && \
    [[ -z "$VSCODE_INJECTION" ]] && \
    [[ "$TERM_PROGRAM" != "vscode" ]] && \
    [[ "$INTELLIJ_ENVIRONMENT_READER" != "true" ]]; then
-  exec tmux new-session
+  # Do not use `exec`: if tmux exits, return to Zsh instead of closing the terminal.
+  tmux new-session -A -s main
 fi
 
 # =====================================================
@@ -20,15 +21,16 @@ fi
 # =====================================================
 # Environment
 # =====================================================
-export PATH="$HOME/.npm-global/bin:$HOME/.local/bin:/usr/local/bin:$PATH"
-
-if [[ -x /opt/homebrew/bin/brew ]]; then
-  eval "$(/opt/homebrew/bin/brew shellenv)"
-elif [[ -x /usr/local/bin/brew ]]; then
-  eval "$(/usr/local/bin/brew shellenv)"
-elif [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-  eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+path=("$HOME/.local/bin" "$HOME/.npm-global/bin" $path)
+if [[ -d /opt/homebrew/bin ]]; then
+  path=(/opt/homebrew/bin /opt/homebrew/sbin $path)
+elif [[ -d /home/linuxbrew/.linuxbrew/bin ]]; then
+  path=(/home/linuxbrew/.linuxbrew/bin /home/linuxbrew/.linuxbrew/sbin $path)
+elif [[ -d /usr/local/bin ]]; then
+  path=(/usr/local/bin /usr/local/sbin $path)
 fi
+typeset -U path PATH
+export PATH
 
 if [[ -n $SSH_CONNECTION ]]; then
   export EDITOR=vim
@@ -36,8 +38,10 @@ else
   export EDITOR=nvim
 fi
 
-# WSL: systemd-logind doesn't reliably create XDG_RUNTIME_DIR
-if [[ -n "$XDG_RUNTIME_DIR" && ! -d "$XDG_RUNTIME_DIR" ]]; then
+# Older WSL sessions may not receive an XDG runtime directory from systemd.
+if [[ ( -z "$XDG_RUNTIME_DIR" || ! -d "$XDG_RUNTIME_DIR" ) ]] &&
+   grep -qi microsoft /proc/version 2>/dev/null; then
+  export XDG_RUNTIME_DIR="/tmp/user-runtime-${UID}"
   mkdir -p "$XDG_RUNTIME_DIR"
   chmod 700 "$XDG_RUNTIME_DIR"
 fi
@@ -54,17 +58,10 @@ setopt HIST_REDUCE_BLANKS
 setopt HIST_IGNORE_SPACE
 
 # =====================================================
-# Zinit Bootstrap
+# Zinit
 # =====================================================
 ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
-if [[ ! -d $ZINIT_HOME ]]; then
-  print -P "%F{yellow}[zinit] Installing...%f"
-  mkdir -p "${ZINIT_HOME:h}"
-  if ! git clone --depth=1 https://github.com/zdharma-continuum/zinit.git "$ZINIT_HOME" 2>/dev/null; then
-    print -P "%F{red}[zinit] Clone failed — plugins will not load.%f"
-  fi
-fi
-[[ -f "$ZINIT_HOME/zinit.zsh" ]] && source "$ZINIT_HOME/zinit.zsh"
+[[ -r "$ZINIT_HOME/zinit.zsh" ]] && source "$ZINIT_HOME/zinit.zsh"
 
 # =====================================================
 # Completion
@@ -103,18 +100,13 @@ bindkey -M viins '^H' backward-delete-char
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
+# terminfo keys work across terminals and tmux; fall back to raw sequences
+bindkey -M viins "${terminfo[kcuu1]:-^[[A}" up-line-or-beginning-search
+bindkey -M viins "${terminfo[kcud1]:-^[[B}" down-line-or-beginning-search
 bindkey -M viins '^[[A' up-line-or-beginning-search
 bindkey -M viins '^[[B' down-line-or-beginning-search
 bindkey -M vicmd 'k'    up-line-or-beginning-search
 bindkey -M vicmd 'j'    down-line-or-beginning-search
-
-# .. expands to ../
-function rationalise-dot() {
-  [[ $LBUFFER = *.. ]] && LBUFFER+=/.. || LBUFFER+=.
-}
-zle -N rationalise-dot
-bindkey .           rationalise-dot
-bindkey -M isearch . self-insert
 
 # Cursor shape: beam in insert, block in normal
 autoload -Uz add-zle-hook-widget
@@ -126,18 +118,20 @@ add-zle-hook-widget zle-keymap-select  _zrc_cursor_block
 # =====================================================
 # Plugins & Prompt
 # =====================================================
-if command -v fzf &>/dev/null; then
-  zinit light Aloxaf/fzf-tab
-  zstyle ':fzf-tab:complete:cd:*' fzf-preview \
-    '[ -n "$realpath" ] && ls --color=always "$realpath" 2>/dev/null'
+if (( $+functions[zinit] )); then
+  if command -v fzf &>/dev/null; then
+    zinit light Aloxaf/fzf-tab
+    zstyle ':fzf-tab:complete:cd:*' fzf-preview \
+      '[ -n "$realpath" ] && ls -a "$realpath" 2>/dev/null'
+  fi
+
+  zinit light zdharma-continuum/fast-syntax-highlighting
+  FAST_HIGHLIGHT_STYLES[unknown-token]="fg=white"
+
+  zinit ice depth=1
+  zinit light romkatv/powerlevel10k
+  [[ -r "$HOME/.p10k.zsh" ]] && source "$HOME/.p10k.zsh"
 fi
-
-zinit light zdharma-continuum/fast-syntax-highlighting
-FAST_HIGHLIGHT_STYLES[unknown-token]="fg=white"
-
-zinit ice depth=1
-zinit light romkatv/powerlevel10k
-[[ -f ~/.p10k.zsh ]] && source ~/.p10k.zsh
 
 # =====================================================
 # Aliases

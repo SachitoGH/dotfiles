@@ -1,7 +1,5 @@
 # Claude Code local settings — machine-specific, never track
 **/.claude/**
 
-# Termux can't exec scripts from /usr/tmp — run install.sh manually instead
-{{- if eq .chezmoi.os "android" }}
-run_once_install.sh
-{{- end }}
+# Repository documentation is not a home-directory dotfile
+README.md

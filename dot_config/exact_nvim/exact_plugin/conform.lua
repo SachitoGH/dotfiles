@@ -1,5 +1,3 @@
-vim.pack.add({ 'https://github.com/stevearc/conform.nvim' })
-
 require('conform').setup {
   -- No format_on_save — manual only
   formatters_by_ft = {
@@ -11,12 +9,8 @@ require('conform').setup {
     typescriptreact = { 'prettier' },
     html = { 'prettier' },
     css = { 'prettier' },
-    scss = { 'prettier' },
-    json = { 'prettier' },
-    yaml = { 'prettier' },
-    markdown = { 'prettier' },
     c = { 'clang-format' },
-    sql = { 'sql_formatter' },
+    cpp = { 'clang-format' },
   },
 }
 
@@ -29,6 +23,18 @@ vim.api.nvim_create_user_command('Format', function(args)
   require('conform').format { async = true, lsp_format = 'fallback', range = range }
 end, { range = true, desc = 'Format buffer or selection' })
 
-vim.keymap.set({ 'n', 'v' }, '<leader>f', function()
+vim.keymap.set('n', '<leader>f', function()
   require('conform').format { async = true, lsp_format = 'fallback' }
 end, { desc = 'Format buffer' })
+
+vim.keymap.set('x', '<leader>f', function()
+  local first = vim.fn.line "'<"
+  local last = vim.fn.line "'>"
+  local end_line = vim.api.nvim_buf_get_lines(0, last - 1, last, true)[1]
+
+  require('conform').format {
+    async = true,
+    lsp_format = 'fallback',
+    range = { start = { first, 0 }, ['end'] = { last, #end_line } },
+  }
+end, { desc = 'Format selection' })

@@ -1,5 +1,3 @@
-vim.pack.add({ 'https://github.com/EdenEast/nightfox.nvim' })
-
 vim.cmd 'colorscheme carbonfox'
 
 vim.api.nvim_set_hl(0, 'StatusLine', { bg = 'none' })

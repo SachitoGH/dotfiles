@@ -1,6 +1,19 @@
-vim.pack.add({ 'https://github.com/ibhagwan/fzf-lua' })
+-- WSL: XDG_RUNTIME_DIR may not exist; fall back to a writable temp path
+if not vim.env.XDG_RUNTIME_DIR or vim.fn.isdirectory(vim.env.XDG_RUNTIME_DIR) == 0 or vim.fn.filewritable(vim.env.XDG_RUNTIME_DIR) ~= 2 then
+  vim.env.XDG_RUNTIME_DIR = vim.fn.stdpath 'cache'
+end
 
-require('fzf-lua').setup {
+local ok, fzf = pcall(require, 'fzf-lua')
+if not ok then
+  if #vim.api.nvim_list_uis() > 0 then
+    vim.schedule(function()
+      vim.notify('fzf-lua unavailable: ' .. fzf, vim.log.levels.WARN)
+    end)
+  end
+  return
+end
+
+fzf.setup {
   'default-title',
   fzf_opts = { ['--layout'] = 'reverse' },
   winopts = {
@@ -10,9 +23,8 @@ require('fzf-lua').setup {
 }
 
 -- Register as vim.ui.select handler (replaces telescope-ui-select)
-require('fzf-lua').register_ui_select()
+fzf.register_ui_select()
 
-local fzf = require 'fzf-lua'
 vim.keymap.set('n', '<leader>sh', fzf.helptags, { desc = 'Search help tags' })
 vim.keymap.set('n', '<leader>sk', fzf.keymaps, { desc = 'Search keymaps' })
 vim.keymap.set('n', '<leader>sf', fzf.files, { desc = 'Search files' })
