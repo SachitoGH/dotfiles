@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Idempotent bootstrap for Ubuntu/WSL, macOS, and Termux.
+# Minimal bootstrap for Debian/Ubuntu, WSL, macOS, and Termux.
 # Chezmoi reruns this run_once_ script whenever its contents change.
 
 set -euo pipefail
+
+export PATH="$HOME/.local/bin:$HOME/.npm-global/bin:$PATH"
 
 log() { printf '\033[1;34m>> %s\033[0m\n' "$*"; }
 ok() { printf '\033[1;32m✓  %s\033[0m\n' "$*"; }
@@ -11,43 +13,51 @@ is_termux() { [[ -d /data/data/com.termux ]]; }
 is_macos() { [[ "$(uname -s)" == "Darwin" ]]; }
 is_wsl() { grep -qi microsoft /proc/version 2>/dev/null; }
 
-brew_setup() {
-  if ! command -v brew &>/dev/null; then
-    log "Installing Homebrew"
-    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-  fi
-
-  local prefix
-  for prefix in /opt/homebrew /home/linuxbrew/.linuxbrew /usr/local; do
-    if [[ -x "$prefix/bin/brew" ]]; then
-      eval "$("$prefix/bin/brew" shellenv)"
+find_brew() {
+  local candidate
+  for candidate in \
+    /opt/homebrew/bin/brew \
+    /home/linuxbrew/.linuxbrew/bin/brew \
+    /usr/local/bin/brew; do
+    if [[ -x "$candidate" ]]; then
+      printf '%s\n' "$candidate"
       return
     fi
   done
+  command -v brew 2>/dev/null
+}
 
-  printf 'Homebrew was installed but could not be found.\n' >&2
-  return 1
+brew_setup() {
+  local brew_path
+  brew_path=$(find_brew || true)
+
+  if [[ -z "$brew_path" ]]; then
+    log "Installing Homebrew"
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    brew_path=$(find_brew || true)
+  fi
+
+  if [[ -z "$brew_path" ]]; then
+    printf 'Homebrew could not be found after installation.\n' >&2
+    return 1
+  fi
+
+  eval "$("$brew_path" shellenv)"
 }
 
 install_termux() {
   log "Installing Termux packages"
   pkg update -y
   pkg install -y \
-    git zsh tmux neovim \
-    fzf ripgrep fd \
-    nodejs python \
-    make unzip \
-    clang clangd lua-language-server
+    clang clangd fzf git git-delta lua-language-server make neovim \
+    nodejs npm python ripgrep stylua tmux unzip zsh
 }
 
 install_macos() {
   log "Installing macOS packages"
   brew_setup
   brew install \
-    git tmux neovim \
-    fzf ripgrep fd \
-    git-delta stylua \
-    node python3
+    clang-format fzf git git-delta neovim node python ripgrep stylua tmux
 }
 
 install_linux() {
@@ -57,31 +67,68 @@ install_linux() {
   fi
 
   log "Installing Linux packages"
-  sudo apt-get update -y
-  sudo apt-get install -y \
-    build-essential ca-certificates curl file git procps zsh unzip \
-    python3 python3-pip nodejs npm \
-    ripgrep fd-find fzf \
-    wl-clipboard xclip
+  sudo apt-get update
+  sudo apt-get install -y --no-install-recommends \
+    build-essential ca-certificates clang-format curl file fzf git \
+    nodejs npm procps python3 ripgrep unzip zsh
+
+  if ! is_wsl; then
+    sudo apt-get install -y --no-install-recommends wl-clipboard xclip
+  fi
 
   brew_setup
   # Distribution packages can lag behind the versions required by this config.
-  brew install neovim tmux git-delta stylua
+  brew install neovim git-delta stylua tmux
 
-  if is_wsl && ! command -v win32yank.exe &>/dev/null; then
-    log "Optional WSL clipboard support: install win32yank.exe in PATH"
+  if is_wsl; then
+    install_win32yank
   fi
+}
+
+install_win32yank() {
+  command -v win32yank.exe &>/dev/null && return
+
+  if [[ "$(uname -m)" != x86_64 ]]; then
+    printf 'Automatic win32yank installation currently supports x86_64 WSL only.\n' >&2
+    return 1
+  fi
+
+  local archive temp_dir target
+  local url=https://github.com/equalsraf/win32yank/releases/download/v0.1.1/win32yank-x64.zip
+  local checksum=247c9a05b94387a884b49d3db13f806b1677dfc38020f955f719be6902260cd6
+  temp_dir=$(mktemp -d)
+  archive="$temp_dir/win32yank.zip"
+  target="$HOME/.local/bin/win32yank.exe"
+
+  log "Installing win32yank"
+  curl -fsSL "$url" -o "$archive"
+  printf '%s  %s\n' "$checksum" "$archive" | sha256sum --check --status
+  unzip -q "$archive" -d "$temp_dir"
+  mkdir -p "$(dirname "$target")"
+  install -m 0755 "$temp_dir/win32yank.exe" "$target"
+  rm -r "$temp_dir"
+}
+
+install_npm_tools() {
+  log "Installing npm tools"
+  mkdir -p "$HOME/.npm-global"
+  npm install --global --no-audit --no-fund \
+    live-server@1.2.2 prettier@3.8.2 tree-sitter-cli@0.26.8
 }
 
 clone_if_missing() {
   local repository=$1
   local destination=$2
 
-  if [[ ! -d "$destination/.git" ]]; then
-    log "Installing $(basename "$destination")"
-    mkdir -p "$(dirname "$destination")"
-    git clone --depth=1 "$repository" "$destination"
+  [[ -d "$destination/.git" ]] && return
+  if [[ -e "$destination" ]]; then
+    printf '%s exists but is not a Git repository.\n' "$destination" >&2
+    return 1
   fi
+
+  log "Installing $(basename "$destination")"
+  mkdir -p "$(dirname "$destination")"
+  git clone --depth=1 "$repository" "$destination"
 }
 
 install_shell_plugins() {
@@ -93,30 +140,72 @@ install_shell_plugins() {
 
 install_tmux_plugins() {
   local plugin_home=$HOME/.tmux/plugins
+  local socket_name=dotfiles-bootstrap-$$
+  local bootstrap_session=dotfiles-bootstrap
+  local install_status=0
+  local tmux_environment
+
   clone_if_missing \
     https://github.com/tmux-plugins/tpm \
     "$plugin_home/tpm"
-  clone_if_missing \
-    https://github.com/christoomey/vim-tmux-navigator \
-    "$plugin_home/vim-tmux-navigator"
-  clone_if_missing \
-    https://github.com/vaaleyard/tmux-dotbar \
-    "$plugin_home/tmux-dotbar"
+
+  tmux -L "$socket_name" -f "$HOME/.tmux.conf" \
+    new-session -d -s "$bootstrap_session"
+  tmux_environment=$(tmux -L "$socket_name" \
+    display-message -p '#{socket_path},#{pid},0')
+
+  TMUX="$tmux_environment" TMUX_PLUGIN_MANAGER_PATH="$plugin_home/" \
+    "$plugin_home/tpm/bin/install_plugins" || install_status=$?
+  tmux -L "$socket_name" kill-server
+
+  return "$install_status"
 }
 
-if is_termux; then
-  install_termux
-elif is_macos; then
-  install_macos
-else
-  install_linux
-fi
+verify_install() {
+  local name
+  local -a missing=()
+  local -a required=(
+    clang-format delta fzf git live-server node npm nvim prettier python3 rg
+    stylua tmux tree-sitter zsh
+  )
 
-install_shell_plugins
-install_tmux_plugins
+  if is_wsl; then
+    required+=(win32yank.exe)
+  elif ! is_termux && ! is_macos; then
+    required+=(wl-copy xclip)
+  fi
 
-ok "Bootstrap complete"
-if [[ ${SHELL:-} != "$(command -v zsh)" ]]; then
-  log "To make zsh your login shell, run: chsh -s $(command -v zsh)"
+  for name in "${required[@]}"; do
+    command -v "$name" &>/dev/null || missing+=("$name")
+  done
+
+  if (( ${#missing[@]} )); then
+    printf 'Bootstrap finished with missing commands: %s\n' "${missing[*]}" >&2
+    return 1
+  fi
+}
+
+main() {
+  if is_termux; then
+    install_termux
+  elif is_macos; then
+    install_macos
+  else
+    install_linux
+  fi
+
+  install_npm_tools
+  install_shell_plugins
+  install_tmux_plugins
+  verify_install
+
+  ok "Bootstrap complete"
+  if [[ ${SHELL:-} != "$(command -v zsh)" ]]; then
+    log "To make zsh your login shell, run: chsh -s $(command -v zsh)"
+  fi
+  log "Open zsh once to install the configured zinit plugins"
+}
+
+if [[ ${BASH_SOURCE[0]} == "$0" ]]; then
+  main "$@"
 fi
-log "Open zsh once to install the configured zinit plugins"

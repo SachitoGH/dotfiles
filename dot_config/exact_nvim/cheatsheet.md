@@ -21,7 +21,7 @@
 
 LSP servers: clangd, pyright, html, cssls, lua_ls, ts_ls
 
-Formatters (manual): clang-format, Black + isort, Prettier, Stylua
+Formatters (manual): clang-format, Prettier, Stylua
 
 ## Keybindings
 

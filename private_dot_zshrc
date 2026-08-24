@@ -21,22 +21,7 @@ fi
 # =====================================================
 # Environment
 # =====================================================
-path=("$HOME/.local/bin" "$HOME/.npm-global/bin" $path)
-if [[ -d /opt/homebrew/bin ]]; then
-  path=(/opt/homebrew/bin /opt/homebrew/sbin $path)
-elif [[ -d /home/linuxbrew/.linuxbrew/bin ]]; then
-  path=(/home/linuxbrew/.linuxbrew/bin /home/linuxbrew/.linuxbrew/sbin $path)
-elif [[ -d /usr/local/bin ]]; then
-  path=(/usr/local/bin /usr/local/sbin $path)
-fi
-typeset -U path PATH
-export PATH
-
-if [[ -n $SSH_CONNECTION ]]; then
-  export EDITOR=vim
-else
-  export EDITOR=nvim
-fi
+export EDITOR=nvim
 
 # Older WSL sessions may not receive an XDG runtime directory from systemd.
 if [[ ( -z "$XDG_RUNTIME_DIR" || ! -d "$XDG_RUNTIME_DIR" ) ]] &&
@@ -141,31 +126,11 @@ alias py=python3
 alias grep='grep --color=auto'
 
 case "$OSTYPE" in
-  darwin*) alias ls='ls -G';           alias ll='ls -alFG' ;;
-  *)       alias ls='ls --color=auto'; alias ll='ls -alF'  ;;
+  darwin*) alias ls='ls -G' ;;
+  *)       alias ls='ls --color=auto' ;;
 esac
 
 if grep -qi microsoft /proc/version 2>/dev/null; then
   alias open='explorer.exe'
   alias gowin='cd /mnt/c/Users/sacho'
 fi
-
-# =====================================================
-# Functions
-# =====================================================
-
-# Sync ~/.config/nvim → chezmoi (handles edits, additions, and deletions)
-nvim-sync() {
-  chezmoi re-add ~/.config/nvim
-
-  chezmoi managed --include=files | grep '\.config/nvim' | while read -r rel; do
-    local dest="$HOME/$rel"
-    if [[ ! -e "$dest" ]]; then
-      local src
-      src=$(chezmoi source-path "$dest" 2>/dev/null)
-      [[ -n "$src" && -f "$src" ]] && rm -v "$src"
-    fi
-  done
-
-  chezmoi apply ~/.config/nvim
-}

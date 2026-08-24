@@ -2,7 +2,6 @@ require('conform').setup {
   -- No format_on_save — manual only
   formatters_by_ft = {
     lua = { 'stylua' },
-    python = { 'isort', 'black' },
     javascript = { 'prettier' },
     typescript = { 'prettier' },
     javascriptreact = { 'prettier' },
