@@ -5,15 +5,11 @@
 | Plugin | Purpose |
 |--------|---------|
 | nightfox.nvim | Carbonfox colorscheme |
-| blink.cmp | Completion (LSP, snippets, path, buffer, dadbod) |
-| vim-dadbod-completion | SQL completion source for blink |
+| blink.cmp | Completion (LSP, snippets, path, buffer) |
 | conform.nvim | Code formatting (manual, `<leader>f`) |
-| dial.nvim | Smart increment/decrement (booleans, dates, hex) |
-| diffview.nvim | Git diff/merge viewer |
 | fzf-lua | Fuzzy finder (files, grep, LSP, buffers) |
 | gitsigns.nvim | Git gutter signs, hunk actions, blame |
 | lazydev.nvim | Neovim Lua API completions |
-| live-preview.nvim | HTML/Markdown live browser preview |
 | nvim-lspconfig | LSP server config defaults |
 | mason.nvim + mason-lspconfig | Auto-install LSP servers |
 | mini.nvim | ai, surround, move, pairs, hipatterns, statusline, icons |
@@ -21,10 +17,11 @@
 | vim-tmux-navigator | Seamless tmux/vim pane navigation |
 | nvim-treesitter | Parser installer (highlight/indent are built-in) |
 | nvim-treesitter-textobjects | Textobject move/swap |
-| nvim-treesitter-context | Sticky function/class context header |
 | nvim-ts-autotag | Auto-close/rename HTML/JSX tags |
 
-LSP servers: clangd, pyright, html, cssls, angularls, emmet_ls, lua_ls, ts_ls
+LSP servers: clangd, pyright, html, cssls, lua_ls, ts_ls
+
+Formatters (manual): clang-format, Black + isort, Prettier, Stylua
 
 ## Keybindings
 
@@ -34,7 +31,6 @@ LSP servers: clangd, pyright, html, cssls, angularls, emmet_ls, lua_ls, ts_ls
 |-----|--------|
 | `<C-h/j/k/l>` | Navigate tmux/vim panes |
 | `<C-\>` | Navigate to previous pane |
-| `<C-a/x>` | Increment/decrement (dial) |
 
 ### Search (`<leader>s`)
 
@@ -67,14 +63,7 @@ LSP servers: clangd, pyright, html, cssls, angularls, emmet_ls, lua_ls, ts_ls
 | `hp` | Preview hunk |
 | `hb` | Blame line |
 | `hd/hD` | Diff against index/last commit |
-
-### Git Diff (`<leader>g`)
-
-| Key | Action |
-|-----|--------|
-| `gd` | Open diff view |
-| `gD` | Close diff view |
-| `gt` | Toggle diff file panel |
+| `[g/]g` | Previous/next hunk |
 
 ### Toggle (`<leader>t`)
 
@@ -109,17 +98,18 @@ LSP servers: clangd, pyright, html, cssls, angularls, emmet_ls, lua_ls, ts_ls
 | `gO` | Document symbols |
 | `gW` | Workspace symbols |
 | `K` | Hover (built-in) |
-| `<C-S>` | Signature help, insert mode (built-in) |
+| `<C-S>` | Signature help, insert mode |
 
-### Jump (`]`/`[` + key)
+### Code Jump (`<leader>j`)
 
-| Key | Object |
+Lowercase jumps forward; uppercase jumps backward.
+
+| Key | Action |
 |-----|--------|
-| `]/[` + `]`/`[` | Function (start/end) |
-| `c/C` | Class (start/end) |
-| `i/I` | Conditional (start/end) |
-| `l/L` | Loop (start/end) |
-| `g` | Git hunk |
+| `jf/jF` | Next/previous function |
+| `jc/jC` | Next/previous class |
+| `ji/jI` | Next/previous conditional |
+| `jl/jL` | Next/previous loop |
 
 ### Surround (`s` prefix)
 
@@ -143,6 +133,5 @@ LSP servers: clangd, pyright, html, cssls, angularls, emmet_ls, lua_ls, ts_ls
 |---------|--------|
 | `:Format` | Format buffer/selection (conform) |
 | `:LspInfo` | LSP health check |
-| `:LspRestart` | Restart LSP servers |
-| `:LspLog` | Open LSP log |
+| `:lsp restart` | Restart LSP servers |
 | `:Mason` | Manage LSP server installations |

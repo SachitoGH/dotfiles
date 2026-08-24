@@ -1,12 +1,7 @@
-vim.pack.add({
-  'https://github.com/kristijanhusak/vim-dadbod-completion',
-  { src = 'https://github.com/saghen/blink.cmp', version = vim.version.range('1.x') },
-})
-
 require('blink.cmp').setup {
   -- Use Lua fuzzy matching on Termux (no pre-built Rust binary for Android/ARM64)
   fuzzy = {
-    implementation = vim.fn.isdirectory('/data/data/com.termux') == 1 and 'lua' or 'prefer_rust',
+    implementation = vim.fn.isdirectory '/data/data/com.termux' == 1 and 'lua' or 'prefer_rust',
   },
 
   appearance = {
@@ -35,7 +30,7 @@ require('blink.cmp').setup {
   },
 
   sources = {
-    default = { 'lsp', 'path', 'snippets', 'lazydev', 'dadbod', 'buffer' },
+    default = { 'lsp', 'path', 'snippets', 'lazydev', 'buffer' },
     providers = {
       lsp = {
         min_keyword_length = 3,
@@ -51,14 +46,6 @@ require('blink.cmp').setup {
         name = 'LazyDev',
         module = 'lazydev.integrations.blink',
         score_offset = 100,
-      },
-      dadbod = {
-        name = 'Dadbod',
-        module = 'vim_dadbod_completion.blink',
-        score_offset = 75,
-        enabled = function()
-          return vim.tbl_contains({ 'sql', 'mysql', 'plsql' }, vim.bo.filetype)
-        end,
       },
     },
   },

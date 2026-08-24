@@ -1,33 +1,42 @@
-# dotfiles
+# Dotfiles
 
-Terminal setup built around Neovim, tmux, and zsh — managed with [chezmoi](https://www.chezmoi.io).
+Small, cross-platform terminal setup managed with
+[chezmoi](https://www.chezmoi.io/).
 
-- **Shell** — zsh with zinit, Powerlevel10k, vi mode, fzf-tab completion
-- **Editor** — Neovim (lazy.nvim) with LSP, blink-cmp, Treesitter, Telescope, Diffview
-- **Terminal** — tmux with TPM, vim-tmux-navigator, OS-aware clipboard
-- **Dotfile sync** — chezmoi with auto git add/commit/push on every change
+- **Shell:** zsh, zinit, Powerlevel10k, vi mode, and fzf-tab
+- **Editor:** Neovim using native `vim.pack`, LSP, blink.cmp, Treesitter,
+  fzf-lua, Oil, mini.nvim, and gitsigns
+- **Terminal:** tmux, TPM, vim-tmux-navigator, and OS-aware clipboard support
+- **Platforms:** Ubuntu, WSL, macOS, and Termux
 
-Works on WSL, Ubuntu, macOS, and Termux.
+## Install on a new machine
 
-## Bootstrap a new machine
-
-Install chezmoi and apply dotfiles in one command:
+For a public GitHub repository:
 
 ```sh
-sh -c "$(curl -fsLS get.chezmoi.io)" -- init --apply git@github.com:SachitoGH/dotfiles.git
+sh -c "$(curl -fsLS https://get.chezmoi.io)" -- init --apply SachitoGH
 ```
 
-This will:
-1. Install chezmoi
-2. Clone this repo
-3. Apply all dotfiles
-4. Run the install script (installs packages, tools, etc.)
+For a private repository after configuring an SSH key:
+
+```sh
+sh -c "$(curl -fsLS https://get.chezmoi.io)" -- init --apply git@github.com:SachitoGH/dotfiles.git
+```
+
+The first apply installs system packages, Neovim, tmux, zinit, TPM, and the
+configured tmux plugins. When it finishes, follow the printed `chsh` command if
+zsh is not already your login shell, then open zsh once to install its plugins.
 
 ## Daily use
 
-| Command | What it does |
+| Command | Purpose |
 |---|---|
-| `chezmoi re-add` | Sync edits to already-tracked files → commit → push |
-| `chezmoi add <path>` | Track a new file or pick up new files in a directory |
-| `chezmoi status` | See what's changed / untracked |
-| `chezmoi diff` | Preview what `chezmoi apply` would change |
+| `chezmoi status` | Show differences between source and home directory |
+| `chezmoi diff` | Review changes before applying them |
+| `chezmoi re-add <path>` | Copy destination edits back into the source state |
+| `chezmoi apply` | Apply the source state locally |
+| `chezmoi update` | Pull remote changes and apply them |
+| `nvim-sync` | Synchronize Neovim edits, additions, and deletions |
+
+Git add, commit, and push are enabled automatically in the generated chezmoi
+configuration.

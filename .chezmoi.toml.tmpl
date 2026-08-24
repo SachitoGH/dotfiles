@@ -1,11 +1,10 @@
 # chezmoi configuration
 # docs: https://www.chezmoi.io/reference/configuration-file/
 
-# Template data — use these in managed dotfiles as {{"{{"}} .name {{"}}"}}, {{"{{"}} .email {{"}}"}}, etc.
-# Override per machine by setting values in ~/.config/chezmoi/chezmoi.toml (not in dotfiles repo)
-[data]
-    name  = "SachitoGH"
-    email = "sachouleptitfou@gmail.com"
+{{- if eq .chezmoi.os "android" }}
+# Termux's system temporary directory can be mounted noexec.
+scriptTempDir = "{{ .chezmoi.cacheDir }}"
+{{- end }}
 
 [edit]
     command = "nvim"
@@ -21,7 +20,3 @@
 [merge]
     command = "nvim"
     args    = ["-d", "{{ `{{ .Destination }}` }}", "{{ `{{ .Source }}` }}", "{{ `{{ .Target }}` }}"]
-
-# Uncomment once delta is installed (apt install git-delta)
-# [diff]
-#     pager = "delta"

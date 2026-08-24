@@ -51,7 +51,8 @@ vim.o.scrolloff = 10
 vim.o.confirm = true
 vim.o.pumborder = 'single'
 
--- Experimental ui2 (0.12): removes "Press Enter" prompts, highlights cmdline
+-- Deliberate experimental exception: failure must never block startup.
+-- ui2 removes "Press Enter" prompts and highlights the command line.
 pcall(function()
   require('vim._core.ui2').enable {}
 end)

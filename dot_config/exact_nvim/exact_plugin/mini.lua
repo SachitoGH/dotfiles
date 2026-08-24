@@ -1,5 +1,3 @@
-vim.pack.add({ 'https://github.com/echasnovski/mini.nvim' })
-
 local ai = require 'mini.ai'
 ai.setup {
   n_lines = 500,
@@ -31,6 +29,10 @@ require('mini.move').setup {
     right = 'L',
     up = 'K',
     down = 'J',
+    line_left = '',
+    line_right = '',
+    line_up = '',
+    line_down = '',
   },
 }
 
