@@ -3,7 +3,8 @@
 
 {{- if eq .chezmoi.os "android" }}
 # Termux's system temporary directory can be mounted noexec.
-scriptTempDir = "{{ .chezmoi.cacheDir }}"
+# The cache directory is not guaranteed to exist during the first apply.
+scriptTempDir = "{{ .chezmoi.homeDir }}"
 {{- end }}
 
 [edit]
