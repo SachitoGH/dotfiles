@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+{{ if eq .chezmoi.os "android" }}#!{{ .chezmoi.homeDir }}/../usr/bin/bash{{ else }}#!/usr/bin/env bash{{ end }}
 # Minimal bootstrap for Debian/Ubuntu, WSL, macOS, and Termux.
 # Chezmoi reruns this run_once_ script whenever its contents change.
 
@@ -49,7 +49,7 @@ install_termux() {
   log "Installing Termux packages"
   pkg update -y
   pkg install -y \
-    clang clangd fzf git git-delta lua-language-server make neovim \
+    clang fzf git git-delta lua-language-server make neovim \
     nodejs npm python ripgrep stylua tmux unzip zsh
 }
 
@@ -110,10 +110,23 @@ install_win32yank() {
 }
 
 install_npm_tools() {
+  local -a packages=(live-server@1.2.2 prettier@3.8.2)
+  is_termux || packages+=(tree-sitter-cli@0.26.8)
+
   log "Installing npm tools"
   mkdir -p "$HOME/.npm-global"
-  npm install --global --no-audit --no-fund \
-    live-server@1.2.2 prettier@3.8.2 tree-sitter-cli@0.26.8
+  npm install --global --no-audit --no-fund "${packages[@]}"
+
+  if is_termux; then
+    local launcher node_path
+    node_path=$(command -v node)
+    npm uninstall --global tree-sitter-cli >/dev/null 2>&1 || true
+    for launcher in \
+      "$HOME/.npm-global/lib/node_modules/live-server/live-server.js" \
+      "$HOME/.npm-global/lib/node_modules/prettier/bin/prettier.cjs"; do
+      [[ -f "$launcher" ]] && sed -i "1s|^#!/usr/bin/env node$|#!$node_path|" "$launcher"
+    done
+  fi
 }
 
 clone_if_missing() {
