@@ -7,8 +7,8 @@ if command -v tmux &>/dev/null && \
    [[ -z "$VSCODE_INJECTION" ]] && \
    [[ "$TERM_PROGRAM" != "vscode" ]] && \
    [[ "$INTELLIJ_ENVIRONMENT_READER" != "true" ]]; then
-  # Do not use `exec`: if tmux exits, return to Zsh instead of closing the terminal.
-  tmux new-session -A -s main
+  # Replace the outer shell so leaving tmux also closes the terminal.
+  exec tmux new-session -A -s main
 fi
 
 # =====================================================
@@ -118,6 +118,15 @@ if (( $+functions[zinit] )); then
   [[ -r "$HOME/.p10k.zsh" ]] && source "$HOME/.p10k.zsh"
 fi
 
+# Mark each prompt so tmux copy mode can jump between command blocks.
+function _zrc_osc133_prompt_marker() {
+  local exit_status=$?
+  printf '\e]133;A\e\\'
+  return $exit_status
+}
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _zrc_osc133_prompt_marker
+
 # =====================================================
 # Aliases
 # =====================================================
@@ -125,12 +134,28 @@ alias nv=nvim
 alias py=python3
 alias grep='grep --color=auto'
 
+# Start Live Server here, or serve a path passed as the first argument.
+serve() {
+  live-server "${1:-.}" "${@:2}"
+}
+
+# Update Ubuntu packages and Homebrew tools, then clean stale package caches.
+update-tools() {
+  sudo apt update &&
+    sudo apt upgrade &&
+    sudo apt autoclean &&
+    brew update &&
+    brew upgrade &&
+    brew cleanup &&
+    npm update --global &&
+    npm cache verify
+}
+
 case "$OSTYPE" in
   darwin*) alias ls='ls -G' ;;
   *)       alias ls='ls --color=auto' ;;
 esac
 
 if grep -qi microsoft /proc/version 2>/dev/null; then
-  alias open='explorer.exe'
-  alias gowin='cd /mnt/c/Users/sacho'
+  alias openwin='explorer.exe'
 fi
