@@ -66,13 +66,27 @@ install_linux() {
     return 1
   fi
 
-  log "Installing Linux packages"
-  sudo apt-get update
-  sudo apt-get install -y --no-install-recommends \
-    build-essential ca-certificates clang-format curl file fzf git \
-    nodejs npm procps python3 ripgrep unzip zsh
+  local command_name
+  local packages_missing=false
+  local -a required_commands=(
+    cc clang-format curl file fzf git make node npm ps python3 rg unzip zsh
+  )
 
-  if ! is_wsl; then
+  for command_name in "${required_commands[@]}"; do
+    command -v "$command_name" &>/dev/null || packages_missing=true
+  done
+
+  if [[ "$packages_missing" == true ]]; then
+    log "Installing Linux packages"
+    sudo apt-get update
+    sudo apt-get install -y --no-install-recommends \
+      build-essential ca-certificates clang-format curl file fzf git \
+      nodejs npm procps python3 ripgrep unzip zsh
+  else
+    ok "Linux packages already installed"
+  fi
+
+  if ! is_wsl && { ! command -v wl-copy &>/dev/null || ! command -v xclip &>/dev/null; }; then
     sudo apt-get install -y --no-install-recommends wl-clipboard xclip
   fi
 

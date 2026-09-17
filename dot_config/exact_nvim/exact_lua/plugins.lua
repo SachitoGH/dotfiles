@@ -29,7 +29,10 @@ vim.api.nvim_create_autocmd('PackChanged', {
     end
 
     vim.schedule(function()
-      require('nvim-treesitter').update(M.parsers)
+      local ok, treesitter = pcall(require, 'nvim-treesitter')
+      if ok then
+        treesitter.update(M.parsers)
+      end
     end)
   end,
 })
