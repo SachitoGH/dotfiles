@@ -1,13 +1,17 @@
 -- nvim-treesitter manages parsers and queries; Neovim provides highlighting.
 local desired_parsers = require('plugins').parsers
 
-local installed = require('nvim-treesitter').get_installed()
-local missing = vim.tbl_filter(function(lang)
-  return not vim.list_contains(installed, lang)
-end, desired_parsers)
+-- Guarded: on a fresh machine the plugin may not be installed yet.
+local has_treesitter, treesitter = pcall(require, 'nvim-treesitter')
+if has_treesitter then
+  local installed = treesitter.get_installed()
+  local missing = vim.tbl_filter(function(lang)
+    return not vim.list_contains(installed, lang)
+  end, desired_parsers)
 
-if #missing > 0 then
-  require('nvim-treesitter').install(missing)
+  if #missing > 0 then
+    treesitter.install(missing)
+  end
 end
 
 -- nvim-treesitter supplies parsers and queries; highlighting is enabled by
@@ -22,7 +26,10 @@ vim.api.nvim_create_autocmd('FileType', {
 })
 
 -- Textobjects: swap
-local swap = require 'nvim-treesitter-textobjects.swap'
+local has_textobjects, swap = pcall(require, 'nvim-treesitter-textobjects.swap')
+if not has_textobjects then
+  return
+end
 vim.keymap.set('n', '<leader>ap', function()
   swap.swap_next '@parameter.inner'
 end, { desc = 'Swap next parameter' })
