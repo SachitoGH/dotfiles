@@ -3,7 +3,7 @@
 Small, cross-platform terminal setup managed with
 [chezmoi](https://www.chezmoi.io/).
 
-- **Shell:** zsh, zinit, Powerlevel10k, vi mode, and fzf-tab
+- **Shell:** zsh, zinit (turbo-loaded plugins), Powerlevel10k, fzf, and fzf-tab
 - **Editor:** Neovim using native `vim.pack`, LSP, blink.cmp, Treesitter,
   fzf-lua, Oil, mini.nvim, and gitsigns
 - **Terminal:** tmux, TPM, vim-tmux-navigator, and portable clipboard support

@@ -1,3 +1,6 @@
+# Launched from Windows (Win+R, admin, shortcut) WSL inherits C:\Windows\System32.
+[[ $PWD == /mnt/c/Windows* ]] && cd ~
+
 # =====================================================
 # Tmux Autostart
 # =====================================================
@@ -22,10 +25,10 @@ fi
 # Environment
 # =====================================================
 export EDITOR=nvim
+(( $+commands[dircolors] )) && eval "$(dircolors -b)"
 
 # Older WSL sessions may not receive an XDG runtime directory from systemd.
-if [[ ( -z "$XDG_RUNTIME_DIR" || ! -d "$XDG_RUNTIME_DIR" ) ]] &&
-   grep -qi microsoft /proc/version 2>/dev/null; then
+if [[ -n $WSL_DISTRO_NAME && ! -d $XDG_RUNTIME_DIR ]]; then
   export XDG_RUNTIME_DIR="/tmp/user-runtime-${UID}"
   mkdir -p "$XDG_RUNTIME_DIR"
   chmod 700 "$XDG_RUNTIME_DIR"
@@ -35,8 +38,9 @@ fi
 # History
 # =====================================================
 HISTFILE="$HOME/.zsh_history"
-HISTSIZE=10000
-SAVEHIST=10000
+HISTSIZE=50000
+SAVEHIST=50000
+setopt EXTENDED_HISTORY
 setopt SHARE_HISTORY
 setopt HIST_IGNORE_ALL_DUPS
 setopt HIST_REDUCE_BLANKS
@@ -51,71 +55,77 @@ ZINIT_HOME="${XDG_DATA_HOME:-$HOME/.local/share}/zinit/zinit.git"
 # =====================================================
 # Completion
 # =====================================================
-autoload -Uz compinit
-
-# Use find instead of glob: glob qualifiers don't expand reliably in [[ ]] on WSL
-_zrc_dump="${ZDOTDIR:-$HOME}/.zcompdump"
-if [[ -f $_zrc_dump ]] && [[ $(find "$_zrc_dump" -mmin +1440 2>/dev/null) ]]; then
-  compinit
-else
-  compinit -C
-fi
-unset _zrc_dump
+# Full compinit (rebuild + security check) at most once a day, cached otherwise.
+# Called from the deferred plugin load below, so it doesn't delay the prompt.
+function _zrc_compinit() {
+  setopt local_options extended_glob
+  local dump="${ZDOTDIR:-$HOME}/.zcompdump"
+  autoload -Uz compinit
+  if [[ -n $dump(#qN.mh+24) ]]; then
+    compinit -d "$dump" && touch "$dump"
+  else
+    compinit -C -d "$dump"
+  fi
+}
 
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Za-z}' 'r:|=*' 'l:|=* r:|=*'
-zstyle ':completion:*' menu select
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
 
 # =====================================================
-# Vi Mode & Keybindings
+# Keybindings
 # =====================================================
-bindkey -v
-KEYTIMEOUT=1
-
-# Emacs-style bindings in insert mode
-bindkey -M viins '^A' beginning-of-line
-bindkey -M viins '^E' end-of-line
-bindkey -M viins '^K' kill-line
-bindkey -M viins '^U' backward-kill-line
-bindkey -M viins '^W' backward-kill-word
-bindkey -M viins '^?' backward-delete-char
-bindkey -M viins '^H' backward-delete-char
+bindkey -e
+bindkey '^U' backward-kill-line
 
 # Arrow keys: history prefix search
 autoload -Uz up-line-or-beginning-search down-line-or-beginning-search
 zle -N up-line-or-beginning-search
 zle -N down-line-or-beginning-search
 # terminfo keys work across terminals and tmux; fall back to raw sequences
-bindkey -M viins "${terminfo[kcuu1]:-^[[A}" up-line-or-beginning-search
-bindkey -M viins "${terminfo[kcud1]:-^[[B}" down-line-or-beginning-search
-bindkey -M viins '^[[A' up-line-or-beginning-search
-bindkey -M viins '^[[B' down-line-or-beginning-search
-bindkey -M vicmd 'k'    up-line-or-beginning-search
-bindkey -M vicmd 'j'    down-line-or-beginning-search
+bindkey "${terminfo[kcuu1]:-^[[A}" up-line-or-beginning-search
+bindkey "${terminfo[kcud1]:-^[[B}" down-line-or-beginning-search
+bindkey '^[[A' up-line-or-beginning-search
+bindkey '^[[B' down-line-or-beginning-search
 
-# Cursor shape: beam in insert, block in normal
-autoload -Uz add-zle-hook-widget
-function _zrc_cursor_beam()  { printf '\e[6 q'; }
-function _zrc_cursor_block() { [[ $KEYMAP == vicmd ]] && printf '\e[2 q' || printf '\e[6 q'; }
-add-zle-hook-widget zle-line-init      _zrc_cursor_beam
-add-zle-hook-widget zle-keymap-select  _zrc_cursor_block
+# Home/End/Delete and Ctrl+Left/Right word jumps
+bindkey "${terminfo[khome]:-^[[H}" beginning-of-line
+bindkey "${terminfo[kend]:-^[[F}"  end-of-line
+bindkey "${terminfo[kdch1]:-^[[3~}" delete-char
+bindkey '^[[1;5D' backward-word
+bindkey '^[[1;5C' forward-word
+
+# fzf: Ctrl-R history, Ctrl-T files, Alt-C cd (script cached, regenerated when fzf updates)
+if (( $+commands[fzf] )); then
+  _zrc_fzf="${XDG_CACHE_HOME:-$HOME/.cache}/fzf-init.zsh"
+  [[ -s $_zrc_fzf && $_zrc_fzf -nt $commands[fzf] ]] || fzf --zsh >| "$_zrc_fzf"
+  source "$_zrc_fzf"
+  unset _zrc_fzf
+fi
 
 # =====================================================
 # Plugins & Prompt
 # =====================================================
 if (( $+functions[zinit] )); then
-  if command -v fzf &>/dev/null; then
-    zinit light Aloxaf/fzf-tab
-    zstyle ':fzf-tab:complete:cd:*' fzf-preview \
-      '[ -n "$realpath" ] && ls -a "$realpath" 2>/dev/null'
-  fi
-
-  zinit light zdharma-continuum/fast-syntax-highlighting
-  FAST_HIGHLIGHT_STYLES[unknown-token]="fg=white"
-
+  # The prompt loads now; everything else loads right after it is drawn (turbo mode).
   zinit ice depth=1
   zinit light romkatv/powerlevel10k
   [[ -r "$HOME/.p10k.zsh" ]] && source "$HOME/.p10k.zsh"
+
+  # fzf-tab must load after compinit and before fast-syntax-highlighting.
+  if (( $+commands[fzf] )); then
+    zstyle ':completion:*' menu no
+    zstyle ':fzf-tab:complete:cd:*' fzf-preview \
+      '[ -n "$realpath" ] && ls -a "$realpath" 2>/dev/null'
+    zinit wait lucid light-mode atinit'_zrc_compinit; zicdreplay' for Aloxaf/fzf-tab
+  else
+    zstyle ':completion:*' menu select
+    zinit wait lucid light-mode atinit'_zrc_compinit; zicdreplay' for zdharma-continuum/null
+  fi
+
+  zinit wait lucid light-mode atload'FAST_HIGHLIGHT_STYLES[unknown-token]="fg=white"' \
+    for zdharma-continuum/fast-syntax-highlighting
+else
+  _zrc_compinit
 fi
 
 # Mark each prompt so tmux copy mode can jump between command blocks.
@@ -126,6 +136,10 @@ function _zrc_osc133_prompt_marker() {
 }
 autoload -Uz add-zsh-hook
 add-zsh-hook precmd _zrc_osc133_prompt_marker
+
+# Back to a bar cursor at every prompt (Neovim and other TUIs can leave a block behind).
+function _zrc_reset_cursor() { printf '\e[6 q'; }
+add-zsh-hook precmd _zrc_reset_cursor
 
 # =====================================================
 # Aliases
@@ -156,6 +170,6 @@ case "$OSTYPE" in
   *)       alias ls='ls --color=auto' ;;
 esac
 
-if grep -qi microsoft /proc/version 2>/dev/null; then
+if [[ -n $WSL_DISTRO_NAME ]]; then
   alias openwin='explorer.exe'
 fi
