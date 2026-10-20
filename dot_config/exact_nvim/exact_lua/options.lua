@@ -1,3 +1,9 @@
+-- Unused remote-plugin providers: skip their startup checks and health warnings
+vim.g.loaded_node_provider = 0
+vim.g.loaded_perl_provider = 0
+vim.g.loaded_python3_provider = 0
+vim.g.loaded_ruby_provider = 0
+
 vim.o.number = true
 vim.o.relativenumber = true
 vim.o.mouse = 'a'
@@ -44,6 +50,7 @@ vim.opt.listchars = { tab = '  ', trail = '·', nbsp = '␣' }
 vim.opt.tabstop = 4
 vim.opt.shiftwidth = 4
 vim.opt.softtabstop = 0
+vim.opt.expandtab = true -- Indent with spaces, so no hidden tab characters get inserted
 
 vim.o.inccommand = 'split'
 vim.o.cursorline = true
