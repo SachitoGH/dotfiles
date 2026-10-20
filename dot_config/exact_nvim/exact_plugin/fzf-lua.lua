@@ -3,45 +3,29 @@ if not vim.env.XDG_RUNTIME_DIR or vim.fn.isdirectory(vim.env.XDG_RUNTIME_DIR) ==
   vim.env.XDG_RUNTIME_DIR = vim.fn.stdpath 'cache'
 end
 
-local ok, fzf = pcall(require, 'fzf-lua')
-if not ok then
-  if #vim.api.nvim_list_uis() > 0 then
-    vim.schedule(function()
-      vim.notify('fzf-lua unavailable: ' .. fzf, vim.log.levels.WARN)
-    end)
-  end
-  return
+local pick = require 'pick'
+
+-- Register fzf-lua as the vim.ui.select handler on first use (replaces telescope-ui-select)
+vim.ui.select = function(...)
+  pick 'register_ui_select'()
+  return vim.ui.select(...)
 end
 
-fzf.setup {
-  'default-title',
-  fzf_opts = { ['--layout'] = 'reverse' },
-  winopts = {
-    border = 'rounded',
-    preview = { layout = 'vertical', vertical = 'down:50%' },
-  },
-}
+vim.keymap.set('n', '<leader>sh', pick 'helptags', { desc = 'Search help tags' })
+vim.keymap.set('n', '<leader>sk', pick 'keymaps', { desc = 'Search keymaps' })
+vim.keymap.set('n', '<leader>sf', pick 'files', { desc = 'Search files' })
+vim.keymap.set('n', '<leader>ss', pick 'builtin', { desc = 'Browse fzf-lua pickers' })
+vim.keymap.set('n', '<leader>sw', pick 'grep_cword', { desc = 'Search word under cursor' })
+vim.keymap.set('n', '<leader>sg', pick 'live_grep', { desc = 'Live grep' })
+vim.keymap.set('n', '<leader>sd', pick 'diagnostics_document', { desc = 'Search diagnostics' })
+vim.keymap.set('n', '<leader>sr', pick 'resume', { desc = 'Resume last search' })
+vim.keymap.set('n', '<leader>s.', pick 'oldfiles', { desc = 'Search recent files' })
+vim.keymap.set('n', '<leader><leader>', pick 'buffers', { desc = 'Switch buffer' })
 
--- Register as vim.ui.select handler (replaces telescope-ui-select)
-fzf.register_ui_select()
+vim.keymap.set('n', '<leader>/', pick 'blines', { desc = 'Fuzzy search in buffer' })
 
-vim.keymap.set('n', '<leader>sh', fzf.helptags, { desc = 'Search help tags' })
-vim.keymap.set('n', '<leader>sk', fzf.keymaps, { desc = 'Search keymaps' })
-vim.keymap.set('n', '<leader>sf', fzf.files, { desc = 'Search files' })
-vim.keymap.set('n', '<leader>ss', fzf.builtin, { desc = 'Browse fzf-lua pickers' })
-vim.keymap.set('n', '<leader>sw', fzf.grep_cword, { desc = 'Search word under cursor' })
-vim.keymap.set('n', '<leader>sg', fzf.live_grep, { desc = 'Live grep' })
-vim.keymap.set('n', '<leader>sd', fzf.diagnostics_document, { desc = 'Search diagnostics' })
-vim.keymap.set('n', '<leader>sr', fzf.resume, { desc = 'Resume last search' })
-vim.keymap.set('n', '<leader>s.', fzf.oldfiles, { desc = 'Search recent files' })
-vim.keymap.set('n', '<leader><leader>', fzf.buffers, { desc = 'Switch buffer' })
-
-vim.keymap.set('n', '<leader>/', fzf.blines, { desc = 'Fuzzy search in buffer' })
-
-vim.keymap.set('n', '<leader>s/', function()
-  fzf.live_grep { grep_open_files = true }
-end, { desc = 'Live grep in open files' })
+vim.keymap.set('n', '<leader>s/', pick('live_grep', { grep_open_files = true }), { desc = 'Live grep in open files' })
 
 vim.keymap.set('n', '<leader>sn', function()
-  fzf.files { cwd = vim.fn.stdpath 'config' }
+  pick('files', { cwd = vim.fn.stdpath 'config' })()
 end, { desc = 'Search neovim config' })

@@ -1,4 +1,9 @@
-require('mason').setup {}
+-- Mason's bin dir goes on PATH now so servers start for the first file;
+-- the mason setup itself (registry, ensure_installed) runs after the first draw.
+local mason_bin = vim.fn.stdpath 'data' .. '/mason/bin'
+if not vim.env.PATH:find(mason_bin, 1, true) then
+  vim.env.PATH = mason_bin .. ':' .. vim.env.PATH
+end
 
 -- LSP keymaps
 local highlight_group = vim.api.nvim_create_augroup('lsp-highlight', { clear = false })
@@ -13,17 +18,13 @@ vim.api.nvim_create_autocmd('LspAttach', {
     -- grr (references), gri (implementation), grt (type_def), gO (symbols),
     -- K (hover), <C-S> (signature_help).
     -- Override some to use fzf-lua instead of quickfix:
-    local has_fzf, fzf = pcall(require, 'fzf-lua')
-    if has_fzf then
-      map('grr', fzf.lsp_references, 'Go to references')
-      map('gri', fzf.lsp_implementations, 'Go to implementation')
-      map('grd', fzf.lsp_definitions, 'Go to definition')
-      map('gO', fzf.lsp_document_symbols, 'Document symbols')
-      map('gW', fzf.lsp_live_workspace_symbols, 'Workspace symbols')
-      map('grt', fzf.lsp_typedefs, 'Go to type definition')
-    else
-      map('grd', vim.lsp.buf.definition, 'Go to definition')
-    end
+    local pick = require 'pick'
+    map('grr', pick 'lsp_references', 'Go to references')
+    map('gri', pick 'lsp_implementations', 'Go to implementation')
+    map('grd', pick 'lsp_definitions', 'Go to definition')
+    map('gO', pick 'lsp_document_symbols', 'Document symbols')
+    map('gW', pick 'lsp_live_workspace_symbols', 'Workspace symbols')
+    map('grt', pick 'lsp_typedefs', 'Go to type definition')
     map('grD', vim.lsp.buf.declaration, 'Go to declaration')
     map('<Leader>d', vim.diagnostic.open_float, 'Show diagnostics')
     map('<Leader>tv', function()
@@ -73,10 +74,7 @@ vim.diagnostic.config {
   virtual_text = { source = 'if_many', spacing = 2 },
 }
 
--- Apply blink.cmp capabilities to all servers
-vim.lsp.config('*', {
-  capabilities = require('blink.cmp').get_lsp_capabilities(),
-})
+-- blink.cmp registers its completion capabilities for all servers itself (plugin/blink-cmp.lua).
 
 -- Server-specific overrides live in lsp/*.lua files (0.12 convention).
 -- nvim-lspconfig provides base configs; our lsp/ dir merges on top.
@@ -91,10 +89,13 @@ if vim.fn.has 'android' == 1 then
   end, servers)
 end
 
-require('mason-lspconfig').setup {
-  ensure_installed = mason_servers,
-  automatic_enable = false,
-}
+require 'later'(function()
+  require('mason').setup {}
+  require('mason-lspconfig').setup {
+    ensure_installed = mason_servers,
+    automatic_enable = false,
+  }
+end)
 
 vim.lsp.enable(servers)
 

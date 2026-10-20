@@ -1,1 +1,3 @@
-require('nvim-ts-autotag').setup {}
+require 'later'(function()
+  require('nvim-ts-autotag').setup {}
+end)
