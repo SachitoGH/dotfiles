@@ -1,5 +1,9 @@
-# Claude Code local settings — machine-specific, never track
-**/.claude/**
+# Claude Code: only the shared config (settings, status line, hooks) is tracked;
+# credentials, history, sessions and settings.local.json stay machine-specific.
+.claude/*
+!.claude/settings.json
+!.claude/statusline.sh
+!.claude/hooks
 
 # Repository documentation is not a home-directory dotfile
 README.md
